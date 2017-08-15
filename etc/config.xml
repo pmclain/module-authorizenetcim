@@ -1,0 +1,60 @@
+<?xml version="1.0" ?>
+<!--
+/**
+ * Pmclain_AuthorizenetCim extension
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the GPL v3 License
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * https://www.gnu.org/licenses/gpl.txt
+ *
+ * @category  Pmclain
+ * @package   Pmclain_AuthorizenetCim
+ * @copyright Copyright (c) 2017
+ * @license   https://www.gnu.org/licenses/gpl.txt GPL v3 License
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+  <default>
+    <payment>
+      <pmclain_authorizenetcim>
+        <model>AuthorizenetCimFacade</model>
+        <is_gateway>1</is_gateway>
+        <can_use_checkout>1</can_use_checkout>
+        <can_authorize>1</can_authorize>
+        <can_capture>1</can_capture>
+        <can_capture_partial>1</can_capture_partial>
+        <can_authorize_vault>1</can_authorize_vault>
+        <can_capture_vault>1</can_capture_vault>
+        <can_use_internal>1</can_use_internal>
+        <can_refund_partial_per_invoice>1</can_refund_partial_per_invoice>
+        <can_refund>1</can_refund>
+        <can_void>1</can_void>
+        <can_cancel>1</can_cancel>
+        <can_edit>1</can_edit>
+        <can_review_payment>1</can_review_payment>
+        <can_deny_payment>1</can_deny_payment>
+        <active>0</active>
+        <payment_action>authorize</payment_action>
+        <title>Credit Cards (Authorize.net CIM)</title>
+        <login backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
+        <trans_key backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
+        <client_key backend_model="Magento\Config\Model\Config\Backend\Encrypted" />
+        <order_status>processing</order_status>
+        <test>1</test>
+        <currency>USD</currency>
+        <debug>0</debug>
+        <cctypes>AE,VI,MC,DI,JCB,DN</cctypes>
+        <useccv>1</useccv>
+        <validation_mode>none</validation_mode>
+        <vault_active>1</vault_active>
+        <allowspecific>0</allowspecific>
+      </pmclain_authorizenetcim>
+      <pmclain_authorizenetcim_vault>
+        <model>AuthorizenetCimVaultFacade</model>
+        <title>Stored Cards (Authorize.net CIM)</title>
+      </pmclain_authorizenetcim_vault>
+    </payment>
+  </default>
+</config>

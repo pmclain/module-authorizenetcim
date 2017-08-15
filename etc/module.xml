@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Pmclain_AuthorizenetCim extension
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the GPL v3 License
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * https://www.gnu.org/licenses/gpl.txt
+ *
+ * @category  Pmclain
+ * @package   Pmclain_AuthorizenetCim
+ * @copyright Copyright (c) 2017
+ * @license   https://www.gnu.org/licenses/gpl.txt GPL v3 License
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Module/etc/module.xsd">
+  <module name="Pmclain_AuthorizenetCim" setup_version="0.0.1">
+    <sequence>
+      <module name="Magento_Authorizenet"/>
+      <module name="Magento_Customer"/>
+      <module name="Magento_Payment"/>
+      <module name="Magento_Checkout"/>
+      <module name="Magento_Catalog"/>
+      <module name="Magento_Quote"/>
+      <module name="Magento_Vault"/>
+    </sequence>
+  </module>
+</config>
