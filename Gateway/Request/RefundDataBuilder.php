@@ -61,7 +61,7 @@ class RefundDataBuilder implements BuilderInterface
     try {
       $amount = $this->formatPrice($this->_subjectReader->readAmount($subject));
     }catch (\InvalidArgumentException $e) {
-      throw new LocalizedException(__($e->getMessage());
+      throw new LocalizedException(__($e->getMessage()));
     }
 
     $this->_creditCard->setCardNumber($payment->getCcLast4());
