@@ -14,24 +14,30 @@
  * @license   https://www.gnu.org/licenses/gpl.txt GPL v3 License
  */
 
-namespace Pmclain\AuthorizenetCim\Gateway\Request\PaymentDataBuilder;
+namespace Pmclain\AuthorizenetCim\Gateway\Request;
 
-use Pmclain\AuthorizenetCim\Gateway\Request\PaymentDataBuilder;
+use Magento\Payment\Gateway\Request\BuilderInterface;
+use Pmclain\AuthorizenetCim\Gateway\Helper\SubjectReader;
 
-class Vault extends PaymentDataBuilder
+class TokenDataBuilder implements BuilderInterface
 {
+  /** @var SubjectReader */
+  protected $_subjectReader;
+
+  public function __construct(
+   SubjectReader $subjectReader
+  ) {
+    $this->_subjectReader = $subjectReader;
+  }
+
   public function build(array $subject)
   {
-    $result = parent::build($subject);
-
     $paymentDataObject = $this->_subjectReader->readPayment($subject);
     $payment = $paymentDataObject->getPayment();
 
     $extensionAttributes = $payment->getExtensionAttributes();
     $paymentToken = $extensionAttributes->getVaultPaymentToken();
 
-    $result['payment_profile'] = $paymentToken->getGatewayToken();
-
-    return $result;
+    return ['payment_profile' => $paymentToken->getGatewayToken()];
   }
 }

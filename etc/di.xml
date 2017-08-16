@@ -216,7 +216,8 @@
   <virtualType name="AuthorizenetCimVaultAuthorizeRequest" type="Magento\Payment\Gateway\Request\BuilderComposite">
     <arguments>
       <argument name="builders" xsi:type="array">
-        <item name="payment" xsi:type="string">Pmclain\AuthorizenetCim\Gateway\Request\PaymentDataBuilder\Vault</item>
+        <item name="payment" xsi:type="string">Pmclain\AuthorizenetCim\Gateway\Request\PaymentDataBuilder</item>
+        <item name="token" xsi:type="string">Pmclain\AuthorizenetCim\Gateway\Request\TokenDataBuilder</item>
         <item name="address" xsi:type="string">Pmclain\AuthorizenetCim\Gateway\Request\AddressDataBuilder</item>
         <item name="customer" xsi:type="string">Pmclain\AuthorizenetCim\Gateway\Request\CustomerDataBuilder</item>
       </argument>
