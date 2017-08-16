@@ -16,17 +16,17 @@
 
 namespace Pmclain\AuthorizenetCim\Model\Authorizenet\Contract;
 
-use net\authorize\api\contract\v1\CustomerProfilePaymentType;
+use net\authorize\api\contract\v1\CreditCardType;
 use Pmclain\AuthorizenetCim\Model\Authorizenet\AbstractFactory;
 
-class CustomerProfilePaymentTypeFactory extends AbstractFactory
+class CreditCardTypeFactory extends AbstractFactory
 {
   /**
    * @param $sourceData
-   * @return CustomerProfilePaymentType
+   * @return CreditCardType
    */
   public function create($sourceData = null)
   {
-    return $this->_objectManager->create(CustomerProfilePaymentType::class);
+    return $this->_objectManager->create(CreditCardType::class);
   }
 }

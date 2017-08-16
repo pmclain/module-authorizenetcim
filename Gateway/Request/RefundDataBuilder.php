@@ -16,13 +16,13 @@
 
 namespace Pmclain\AuthorizenetCim\Gateway\Request;
 
-use net\authorize\api\contract\v1\CreditCardType;
-use Pmclain\AuthorizenetCim\Gateway\Helper\SubjectReader;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Payment\Helper\Formatter;
-use net\authorize\api\contract\v1\TransactionRequestType;
-use net\authorize\api\contract\v1\PaymentType;
 use Magento\Framework\Exception\LocalizedException;
+use Pmclain\AuthorizenetCim\Gateway\Helper\SubjectReader;
+use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\TransactionRequestTypeFactory;
+use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\PaymentTypeFactory;
+use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\CreditCardTypeFactory;
 
 class RefundDataBuilder implements BuilderInterface
 {
@@ -31,25 +31,25 @@ class RefundDataBuilder implements BuilderInterface
   /** @var SubjectReader */
   protected $_subjectReader;
 
-  /** @var TransactionRequestType */
-  protected $_transactionRequest;
+  /** @var TransactionRequestTypeFactory */
+  protected $_transactionRequestFactory;
 
-  /** @var CreditCardType */
-  protected $_creditCard;
+  /** @var CreditCardTypeFactory */
+  protected $_creditCardFactory;
 
-  /** @var PaymentType */
-  protected $_payment;
+  /** @var PaymentTypeFactory */
+  protected $_paymentFactory;
 
   public function __construct(
     SubjectReader $subjectReader,
-    TransactionRequestType $transactionRequestType,
-    CreditCardType $creditCardType,
-    PaymentType $paymentType
+    TransactionRequestTypeFactory $transactionRequestTypeFactory,
+    CreditCardTypeFactory $creditCardTypeFactory,
+    PaymentTypeFactory $paymentTypeFactory
   ) {
     $this->_subjectReader = $subjectReader;
-    $this->_transactionRequest = $transactionRequestType;
-    $this->_creditCard = $creditCardType;
-    $this->_payment = $paymentType;
+    $this->_transactionRequestFactory = $transactionRequestTypeFactory;
+    $this->_creditCardFactory = $creditCardTypeFactory;
+    $this->_paymentFactory = $paymentTypeFactory;
   }
 
   public function build(array $subject)
@@ -64,15 +64,19 @@ class RefundDataBuilder implements BuilderInterface
       throw new LocalizedException(__($e->getMessage()));
     }
 
-    $this->_creditCard->setCardNumber($payment->getCcLast4());
-    $this->_creditCard->setExpirationDate('XXXX');
-    $this->_payment->setCreditCard($this->_creditCard);
+    $creditCard = $this->_creditCardFactory->create();
+    $creditCard->setCardNumber($payment->getCcLast4());
+    $creditCard->setExpirationDate('XXXX');
 
-    $this->_transactionRequest->setRefTransId($payment->getParentTransactionId());
-    $this->_transactionRequest->setAmount($amount);
-    $this->_transactionRequest->setPayment($this->_payment);
-    $this->_transactionRequest->setTransactionType('refundTransaction');
+    $paymentType = $this->_paymentFactory->create();
+    $paymentType->setCreditCard($creditCard);
 
-    return ['transaction_request' => $this->_transactionRequest];
+    $transactionRequest = $this->_transactionRequestFactory->create();
+    $transactionRequest->setRefTransId($payment->getParentTransactionId());
+    $transactionRequest->setAmount($amount);
+    $transactionRequest->setPayment($paymentType);
+    $transactionRequest->setTransactionType('refundTransaction');
+
+    return ['transaction_request' => $transactionRequest];
   }
 }

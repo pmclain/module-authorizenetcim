@@ -17,10 +17,10 @@
 namespace Pmclain\AuthorizenetCim\Gateway\Request;
 
 use Magento\Framework\Exception\LocalizedException;
-use Pmclain\AuthorizenetCim\Gateway\Helper\SubjectReader;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Payment\Helper\Formatter;
-use net\authorize\api\contract\v1\TransactionRequestType;
+use Pmclain\AuthorizenetCim\Gateway\Helper\SubjectReader;
+use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\TransactionRequestTypeFactory;
 
 class VoidDataBuilder implements BuilderInterface
 {
@@ -29,16 +29,16 @@ class VoidDataBuilder implements BuilderInterface
   /** @var SubjectReader */
   protected $_subjectReader;
 
-  /** @var TransactionRequestType */
-  protected $_transactionRequest;
+  /** @var TransactionRequestTypeFactory */
+  protected $_transactionRequestFactory;
 
   public function __construct(
     SubjectReader $subjectReader,
-    TransactionRequestType $transactionRequestType
+    TransactionRequestTypeFactory $transactionRequestTypeFactory
   )
   {
     $this->_subjectReader = $subjectReader;
-    $this->_transactionRequest = $transactionRequestType;
+    $this->_transactionRequestFactory = $transactionRequestTypeFactory;
   }
 
   public function build(array $subject)
@@ -52,9 +52,10 @@ class VoidDataBuilder implements BuilderInterface
       throw new LocalizedException(__('No Transaction to void'));
     }
 
-    $this->_transactionRequest->setRefTransId($transactionId);
-    $this->_transactionRequest->setTransactionType('voidTransaction');
+    $transactionRequest = $this->_transactionRequestFactory->create();
+    $transactionRequest->setRefTransId($transactionId);
+    $transactionRequest->setTransactionType('voidTransaction');
 
-    return ['transaction_request' => $this->_transactionRequest];
+    return ['transaction_request' => $transactionRequest];
   }
 }

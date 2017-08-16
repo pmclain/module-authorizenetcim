@@ -17,7 +17,6 @@
 namespace Pmclain\AuthorizenetCim\Gateway\Request\CustomerDataBuilder;
 
 use Pmclain\AuthorizenetCim\Gateway\Request\CustomerDataBuilder;
-use Magento\Payment\Gateway\Request\BuilderInterface;
 use Pmclain\AuthorizenetCim\Gateway\Helper\SubjectReader;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Model\Session;

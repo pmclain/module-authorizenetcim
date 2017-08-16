@@ -20,7 +20,7 @@ use Magento\Framework\Exception\LocalizedException;
 use Pmclain\AuthorizenetCim\Gateway\Helper\SubjectReader;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Payment\Helper\Formatter;
-use net\authorize\api\contract\v1\TransactionRequestType;
+use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\TransactionRequestTypeFactory;
 
 class CaptureDataBuilder implements BuilderInterface
 {
@@ -29,15 +29,15 @@ class CaptureDataBuilder implements BuilderInterface
   /** @var SubjectReader */
   protected $_subjectReader;
 
-  /** @var TransactionRequestType */
-  protected $_transactionRequest;
+  /** @var TransactionRequestTypeFactory */
+  protected $_transactionRequestFactory;
 
   public function __construct(
     SubjectReader $subjectReader,
-    TransactionRequestType $transactionRequestType
+    TransactionRequestTypeFactory $transactionRequestTypeFactory
   ) {
     $this->_subjectReader = $subjectReader;
-    $this->_transactionRequest = $transactionRequestType;
+    $this->_transactionRequestFactory = $transactionRequestTypeFactory;
   }
 
   public function build(array $subject)
@@ -50,10 +50,11 @@ class CaptureDataBuilder implements BuilderInterface
       throw new LocalizedException(__('No Authorization Transaction to capture'));
     }
 
-    $this->_transactionRequest->setRefTransId($transactionId);
-    $this->_transactionRequest->setAmount($this->_subjectReader->readAmount($subject));
-    $this->_transactionRequest->setTransactionType('priorAuthCaptureTransaction');
+    $tranactionRequest = $this->_transactionRequestFactory->create();
+    $tranactionRequest->setRefTransId($transactionId);
+    $tranactionRequest->setAmount($this->_subjectReader->readAmount($subject));
+    $tranactionRequest->setTransactionType('priorAuthCaptureTransaction');
 
-    return ['transaction_request' => $this->_transactionRequest];
+    return ['transaction_request' => $tranactionRequest];
   }
 }

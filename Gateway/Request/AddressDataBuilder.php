@@ -18,22 +18,22 @@ namespace Pmclain\AuthorizenetCim\Gateway\Request;
 
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Pmclain\AuthorizenetCim\Gateway\Helper\SubjectReader;
-use net\authorize\api\contract\v1\CustomerAddressType;
+use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\CustomerAddressTypeFactory;
 
 class AddressDataBuilder implements BuilderInterface
 {
   /** @var SubjectReader */
   protected $_subjectReader;
 
-  /** @var CustomerAddressType */
-  protected $_customerAddress;
+  /** @var CustomerAddressTypeFactory */
+  protected $_customerAddressFactory;
 
   public function __construct(
     SubjectReader $subjectReader,
-    CustomerAddressType $customerAddressType
+    CustomerAddressTypeFactory $customerAddressTypeFactory
   ) {
     $this->_subjectReader = $subjectReader;
-    $this->_customerAddress = $customerAddressType;
+    $this->_customerAddressFactory = $customerAddressTypeFactory;
   }
 
   public function build(array $buildSubject)
@@ -43,17 +43,18 @@ class AddressDataBuilder implements BuilderInterface
     $order = $paymentDataObject->getOrder();
     $billingAddress = $order->getBillingAddress();
 
-    $this->_customerAddress->setFirstName($billingAddress->getFirstname());
-    $this->_customerAddress->setLastName($billingAddress->getLastname());
-    $this->_customerAddress->setCompany($billingAddress->getCompany());
-    $this->_customerAddress->setAddress($billingAddress->getStreetLine1());
-    $this->_customerAddress->setCity($billingAddress->getCity());
-    $this->_customerAddress->setState($billingAddress->getRegionCode());
-    $this->_customerAddress->setZip($billingAddress->getPostcode());
-    $this->_customerAddress->setCountry($billingAddress->getCountryId());
-    $this->_customerAddress->setPhoneNumber($billingAddress->getTelephone());
-    $this->_customerAddress->setEmail($billingAddress->getEmail());
+    $customerAddress = $this->_customerAddressFactory->create();
+    $customerAddress->setFirstName($billingAddress->getFirstname());
+    $customerAddress->setLastName($billingAddress->getLastname());
+    $customerAddress->setCompany($billingAddress->getCompany());
+    $customerAddress->setAddress($billingAddress->getStreetLine1());
+    $customerAddress->setCity($billingAddress->getCity());
+    $customerAddress->setState($billingAddress->getRegionCode());
+    $customerAddress->setZip($billingAddress->getPostcode());
+    $customerAddress->setCountry($billingAddress->getCountryId());
+    $customerAddress->setPhoneNumber($billingAddress->getTelephone());
+    $customerAddress->setEmail($billingAddress->getEmail());
 
-    return ['bill_to_address' => $this->_customerAddress];
+    return ['bill_to_address' => $customerAddress];
   }
 }
