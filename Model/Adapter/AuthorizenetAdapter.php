@@ -16,70 +16,84 @@
 
 namespace Pmclain\AuthorizenetCim\Model\Adapter;
 
-use Magento\Framework\Exception\PaymentException;
-use net\authorize\api\contract\v1\MerchantAuthenticationType;
 use Pmclain\AuthorizenetCim\Gateway\Config\Config;
+use Magento\Framework\Exception\PaymentException;
 use Magento\Customer\Api\CustomerRepositoryInterface;
-use net\authorize\api\contract\v1\CreateCustomerProfileRequest;
-use net\authorize\api\contract\v1\CreateCustomerPaymentProfileRequest;
-use net\authorize\api\controller\CreateCustomerProfileController;
-use net\authorize\api\controller\CreateCustomerPaymentProfileController;
 use net\authorize\api\constants\ANetEnvironment;
-use net\authorize\api\contract\v1\CustomerProfileType;
-use net\authorize\api\contract\v1\CustomerProfilePaymentType;
-use net\authorize\api\contract\v1\CreateTransactionRequest;
-use net\authorize\api\controller\CreateTransactionController;
-use net\authorize\api\contract\v1\PaymentProfileType;
+use net\authorize\api\contract\v1\MerchantAuthenticationType;
+use Pmclain\AuthorizenetCim\Model\Authorizenet\Controller\CreateTransactionControllerFactory;
+use Pmclain\AuthorizenetCim\Model\Authorizenet\Controller\CreateCustomerPaymentProfileControllerFactory;
+use Pmclain\AuthorizenetCim\Model\Authorizenet\Controller\CreateCustomerProfileControllerFactory;
+use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\CreateTransactionRequestFactory;
+use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\CustomerProfileTypeFactory;
+use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\CreateCustomerPaymentProfileRequestFactory;
+use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\CreateCustomerProfileRequestFactory;
+use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\CustomerProfilePaymentTypeFactory;
+use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\PaymentProfileTypeFactory;
 
 class AuthorizenetAdapter
 {
   /** @var MerchantAuthenticationType */
   protected $_merchangeAuthentication;
 
-  /** @var CreateCustomerProfileRequest */
-  protected $_createCustomerProfileRequest;
+  /** @var CreateCustomerProfileRequestFactory */
+  protected $_createCustomerProfileRequestFactory;
 
-  /** @var CreateCustomerPaymentProfileRequest */
-  protected $_createCustomerPaymentProfileRequest;
+  /** @var CreateCustomerPaymentProfileRequestFactory */
+  protected $_createCustomerPaymentProfileRequestFactory;
 
-  /** @var CustomerProfileType */
-  protected $_customerProfile;
+  /** @var CustomerProfileTypeFactory */
+  protected $_customerProfileFactory;
 
-  /** @var CustomerProfilePaymentType */
-  protected $_customerProfilePayment;
+  /** @var CustomerProfilePaymentTypeFactory */
+  protected $_customerProfilePaymentFactory;
 
-  /** @var CreateTransactionRequest */
-  protected $_createTransactionRequest;
+  /** @var CreateTransactionRequestFactory */
+  protected $_createTransactionRequestFactory;
 
-  /** @var PaymentProfileType */
-  protected $_paymentProfile;
+  /** @var PaymentProfileTypeFactory */
+  protected $_paymentProfileFactory;
 
   /** @var CustomerRepositoryInterface */
   protected $_customerRepository;
+
+  /** @var CreateTransactionControllerFactory */
+  protected $_createTransactionControllerFactory;
+
+  /** @var CreateCustomerPaymentProfileControllerFactory */
+  protected $_createCustomerPaymentProfileControllerFactory;
+
+  /** @var CreateCustomerProfileControllerFactory */
+  protected $_createCustomerProfileControllerFactory;
 
   /** @var Config */
   protected $_config;
 
   public function __construct(
     MerchantAuthenticationType $merchantAuthenticationType,
-    CreateCustomerProfileRequest $createCustomerProfileRequest,
-    CreateCustomerPaymentProfileRequest $createCustomerPaymentProfileRequest,
-    CustomerProfileType $customerProfileType,
-    CustomerProfilePaymentType $customerProfilePayment,
-    CreateTransactionRequest $createTransactionRequest,
-    PaymentProfileType $paymentProfileType,
+    CreateCustomerProfileRequestFactory $createCustomerProfileRequestFactory,
+    CreateCustomerPaymentProfileRequestFactory $createCustomerPaymentProfileRequestFactory,
+    CustomerProfileTypeFactory $customerProfileTypeFactory,
+    CustomerProfilePaymentTypeFactory $customerProfilePaymentTypeFactory,
+    CreateTransactionRequestFactory $createTransactionRequestFactory,
+    PaymentProfileTypeFactory $paymentProfileTypeFactory,
     CustomerRepositoryInterface $customerRepository,
+    CreateTransactionControllerFactory $createTransactionControllerFactory,
+    CreateCustomerProfileControllerFactory $createCustomerProfileControllerFactory,
+    CreateCustomerPaymentProfileControllerFactory $createCustomerPaymentProfileControllerFactory,
     Config $config
   ) {
     $this->_merchangeAuthentication = $merchantAuthenticationType;
-    $this->_createCustomerProfileRequest = $createCustomerProfileRequest;
-    $this->_createCustomerPaymentProfileRequest = $createCustomerPaymentProfileRequest;
-    $this->_customerProfile = $customerProfileType;
-    $this->_customerProfilePayment = $customerProfilePayment;
-    $this->_createTransactionRequest = $createTransactionRequest;
-    $this->_paymentProfile = $paymentProfileType;
+    $this->_createCustomerProfileRequestFactory = $createCustomerProfileRequestFactory;
+    $this->_createCustomerPaymentProfileRequestFactory = $createCustomerPaymentProfileRequestFactory;
+    $this->_customerProfileFactory = $customerProfileTypeFactory;
+    $this->_customerProfilePaymentFactory = $customerProfilePaymentTypeFactory;
+    $this->_createTransactionRequestFactory = $createTransactionRequestFactory;
+    $this->_paymentProfileFactory = $paymentProfileTypeFactory;
     $this->_customerRepository = $customerRepository;
     $this->_config = $config;
+    $this->_createTransactionControllerFactory = $createTransactionControllerFactory;
+    $this->_createCustomerProfileControllerFactory = $createCustomerProfileControllerFactory;
     $this->_initMerchantAuthentication();
   }
 
@@ -118,11 +132,13 @@ class AuthorizenetAdapter
   {
     $data['payment']->setBillTo($data['bill_to_address']);
     $paymentProfiles = [$data['payment']];
-    $this->_customerProfile->setMerchantCustomerId($this->_createCustomerMerchantId($data));
-    $this->_customerProfile->setDescription($this->_createCustomerDescription($data));
-    $this->_customerProfile->setPaymentProfiles($paymentProfiles);
-    $this->_customerProfile->setEmail($data['bill_to_address']->getEmail());
-    $customerProfileResponse = $this->_createCustomerProfile();
+
+    $customerProfile = $this->_customerProfileFactory->create();
+    $customerProfile->setMerchantCustomerId($this->_createCustomerMerchantId($data));
+    $customerProfile->setDescription($this->_createCustomerDescription($data));
+    $customerProfile->setPaymentProfiles($paymentProfiles);
+    $customerProfile->setEmail($data['bill_to_address']->getEmail());
+    $customerProfileResponse = $this->_createCustomerProfile($customerProfile);
 
     $data['payment_profile'] = $customerProfileResponse->getCustomerPaymentProfileIdList()[0];
     $data['profile_id'] = $customerProfileResponse->getCustomerProfileId();
@@ -163,11 +179,14 @@ class AuthorizenetAdapter
    */
   protected function _sale(array $data)
   {
-    $this->_paymentProfile->setPaymentProfileId($data['payment_profile']);
-    $this->_customerProfilePayment->setCustomerProfileId($data['profile_id']);
-    $this->_customerProfilePayment->setPaymentProfile($this->_paymentProfile);
+    $paymentProfile = $this->_paymentProfileFactory->create();
+    $paymentProfile->setPaymentProfileId($data['payment_profile']);
 
-    $data['transaction_request']->setProfile($this->_customerProfilePayment);
+    $customerProfilePayment = $this->_customerProfilePaymentFactory->create();
+    $customerProfilePayment->setCustomerProfileId($data['profile_id']);
+    $customerProfilePayment->setPaymentProfile($paymentProfile);
+
+    $data['transaction_request']->setProfile($customerProfilePayment);
 
     if ($data['capture']) {
       $data['transaction_request']->setTransactionType('authCaptureTransaction');
@@ -197,27 +216,28 @@ class AuthorizenetAdapter
    */
   protected function _submitTransactionRequest($transaction)
   {
-    $this->_createTransactionRequest->setMerchantAuthentication($this->_merchangeAuthentication);
-    $this->_createTransactionRequest->setTransactionRequest($transaction);
+    $transactionRequest = $this->_createTransactionRequestFactory->create();
+    $transactionRequest->setMerchantAuthentication($this->_merchangeAuthentication);
+    $transactionRequest->setTransactionRequest($transaction);
 
-    $controller = new CreateTransactionController($this->_createTransactionRequest);
+    $controller = $this->_createTransactionControllerFactory->create($transactionRequest);
 
-    $result = $controller->executeWithApiResponse($this->_getEnvironment());
-
-    return $result;
+    return $controller->executeWithApiResponse($this->_getEnvironment());
   }
 
   /**
+   * @param \net\authorize\api\contract\v1\CustomerProfileType $customerProfile
    * @return \net\authorize\api\contract\v1\CreateCustomerProfileResponse
    * @throws PaymentException
    */
-  protected function _createCustomerProfile()
+  protected function _createCustomerProfile($customerProfile)
   {
-    $this->_createCustomerProfileRequest->setProfile($this->_customerProfile);
-    $this->_createCustomerProfileRequest->setMerchantAuthentication($this->_merchangeAuthentication);
-    $this->_createCustomerProfileRequest->setValidationMode($this->_config->getValidationMode());
+    $customerProfileRequest = $this->_createCustomerProfileRequestFactory->create();
+    $customerProfileRequest->setProfile($customerProfile);
+    $customerProfileRequest->setMerchantAuthentication($this->_merchangeAuthentication);
+    $customerProfileRequest->setValidationMode($this->_config->getValidationMode());
 
-    $controller = new CreateCustomerProfileController($this->_createCustomerProfileRequest);
+    $controller = $this->_createCustomerProfileControllerFactory->create($customerProfileRequest);
 
     $result = $controller->executeWithApiResponse($this->_getEnvironment());
 
@@ -228,6 +248,23 @@ class AuthorizenetAdapter
     }
 
     return $result;
+  }
+
+  /**
+   * @param array $data
+   * @return \net\authorize\api\contract\v1\CreateCustomerPaymentProfileResponse
+   */
+  protected function _createCustomerPaymentProfile(array $data)
+  {
+    $customerPaymentProfileRequest = $this->_createCustomerPaymentProfileRequestFactory->create();
+    $customerPaymentProfileRequest->setMerchantAuthentication($this->_merchangeAuthentication);
+    $customerPaymentProfileRequest->setCustomerProfileId($data['profile_id']);
+    $customerPaymentProfileRequest->setPaymentProfile($data['payment']);
+    $customerPaymentProfileRequest->setValidationMode($this->_config->getValidationMode());
+
+    $controller = $this->_createCustomerPaymentProfileControllerFactory->create($customerPaymentProfileRequest);
+
+    return $controller->executeWithApiResponse($this->_getEnvironment());
   }
 
   /**
@@ -254,22 +291,6 @@ class AuthorizenetAdapter
     }
 
     return $data['guest_description'];
-  }
-
-  /**
-   * @param array $data
-   * @return \net\authorize\api\contract\v1\CreateCustomerPaymentProfileResponse
-   */
-  protected function _createCustomerPaymentProfile(array $data)
-  {
-    $this->_createCustomerPaymentProfileRequest->setMerchantAuthentication($this->_merchangeAuthentication);
-    $this->_createCustomerPaymentProfileRequest->setCustomerProfileId($data['profile_id']);
-    $this->_createCustomerPaymentProfileRequest->setPaymentProfile($data['payment']);
-    $this->_createCustomerPaymentProfileRequest->setValidationMode($this->_config->getValidationMode());
-
-    $controller = new CreateCustomerPaymentProfileController($this->_createCustomerPaymentProfileRequest);
-
-    return $controller->executeWithApiResponse($this->_getEnvironment());
   }
 
   /** @return $this */
