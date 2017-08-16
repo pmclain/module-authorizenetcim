@@ -16,11 +16,13 @@
 
 namespace Pmclain\AuthorizenetCim\Gateway\Request;
 
+use net\authorize\api\contract\v1\CreditCardType;
 use Pmclain\AuthorizenetCim\Gateway\Helper\SubjectReader;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Payment\Helper\Formatter;
 use net\authorize\api\contract\v1\TransactionRequestType;
-use Magento\Sales\Api\Data\TransactionInterface;
+use net\authorize\api\contract\v1\PaymentType;
+use Magento\Framework\Exception\LocalizedException;
 
 class RefundDataBuilder implements BuilderInterface
 {
@@ -32,12 +34,22 @@ class RefundDataBuilder implements BuilderInterface
   /** @var TransactionRequestType */
   protected $_transactionRequest;
 
+  /** @var CreditCardType */
+  protected $_creditCard;
+
+  /** @var PaymentType */
+  protected $_payment;
+
   public function __construct(
     SubjectReader $subjectReader,
-    TransactionRequestType $transactionRequestType
+    TransactionRequestType $transactionRequestType,
+    CreditCardType $creditCardType,
+    PaymentType $paymentType
   ) {
     $this->_subjectReader = $subjectReader;
     $this->_transactionRequest = $transactionRequestType;
+    $this->_creditCard = $creditCardType;
+    $this->_payment = $paymentType;
   }
 
   public function build(array $subject)
@@ -49,17 +61,16 @@ class RefundDataBuilder implements BuilderInterface
     try {
       $amount = $this->formatPrice($this->_subjectReader->readAmount($subject));
     }catch (\InvalidArgumentException $e) {
-      //nothing
+      throw new LocalizedException(__($e->getMessage());
     }
 
-    $txnId = str_replace(
-      '-' . TransactionInterface::TYPE_CAPTURE,
-      '',
-      $payment->getParentTransactionId()
-    );
+    $this->_creditCard->setCardNumber($payment->getCcLast4());
+    $this->_creditCard->setExpirationDate('XXXX');
+    $this->_payment->setCreditCard($this->_creditCard);
 
-    $this->_transactionRequest->setRefTransId($txnId);
+    $this->_transactionRequest->setRefTransId($payment->getParentTransactionId());
     $this->_transactionRequest->setAmount($amount);
+    $this->_transactionRequest->setPayment($this->_payment);
     $this->_transactionRequest->setTransactionType('refundTransaction');
 
     return ['transaction_request' => $this->_transactionRequest];

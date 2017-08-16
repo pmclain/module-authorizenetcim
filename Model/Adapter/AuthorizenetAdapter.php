@@ -89,7 +89,7 @@ class AuthorizenetAdapter
    */
   public function refund($transaction)
   {
-    $this->_submitTransactionRequest($transaction);
+    return $this->_submitTransactionRequest($transaction);
   }
 
   /**
