@@ -70,7 +70,7 @@ class CanVoidHandlerTest extends \PHPUnit_Framework_TestCase
     );
   }
 
-  /** @covers CanVoidHandler::handle */
+  /** @cover CanVoidHandler::handle */
   public function testHandleCanNotVoid()
   {
     $this->paymentMock->expects($this->once())
@@ -83,7 +83,7 @@ class CanVoidHandlerTest extends \PHPUnit_Framework_TestCase
     );
   }
 
-  /** @covers CanVoidHandler::handle */
+  /** @cover CanVoidHandler::handle */
   public function testHandleCanVoid()
   {
     $this->paymentMock->expects($this->once())

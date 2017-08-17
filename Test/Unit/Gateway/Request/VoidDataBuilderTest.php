@@ -79,7 +79,7 @@ class VoidDataBuilderTest extends \PHPUnit_Framework_TestCase
     );
   }
 
-  /** @covers VoidDataBuilder::build */
+  /** @cover VoidDataBuilder::build */
   public function testBuild()
   {
     $this->paymentMock->expects($this->once())
@@ -104,7 +104,7 @@ class VoidDataBuilderTest extends \PHPUnit_Framework_TestCase
     );
   }
 
-  /** @covers VoidDataBuilder::build */
+  /** @cover VoidDataBuilder::build */
   public function testBuildWithParentTransaction()
   {
     $this->paymentMock->expects($this->once())
@@ -126,7 +126,7 @@ class VoidDataBuilderTest extends \PHPUnit_Framework_TestCase
   }
 
   /**
-   * @covers VoidDataBuilder::build
+   * @cover VoidDataBuilder::build
    * @expectedException \Magento\Framework\Exception\LocalizedException
    */
   public function testBuildWithException()

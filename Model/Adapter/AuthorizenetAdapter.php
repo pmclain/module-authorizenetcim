@@ -94,6 +94,7 @@ class AuthorizenetAdapter
     $this->_config = $config;
     $this->_createTransactionControllerFactory = $createTransactionControllerFactory;
     $this->_createCustomerProfileControllerFactory = $createCustomerProfileControllerFactory;
+    $this->_createCustomerPaymentProfileControllerFactory = $createCustomerPaymentProfileControllerFactory;
     $this->_initMerchantAuthentication();
   }
 

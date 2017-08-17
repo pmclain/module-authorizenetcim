@@ -122,7 +122,7 @@ class VaultDetailsHandler implements HandlerInterface
   {
     $extensionAttributes = $payment->getExtensionAttributes();
     if (null === $extensionAttributes) {
-      $extensionAttributes = $this->paymentExtensionFactory->create();
+      $extensionAttributes = $this->_paymentExtensionFactory->create();
       $payment->setExtensionAttributes($extensionAttributes);
     }
     return $extensionAttributes;

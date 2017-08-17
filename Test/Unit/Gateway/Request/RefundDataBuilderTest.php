@@ -111,7 +111,7 @@ class RefundDataBuilderTest extends \PHPUnit_Framework_TestCase
   }
 
   /**
-   * @covers RefundDataBuilder::build
+   * @cover RefundDataBuilder::build
    * @expectedException \Magento\Framework\Exception\LocalizedException
    */
   public function testBuildWithoutAmout()

@@ -152,7 +152,7 @@ class CaptureStrategyCommandTest extends \PHPUnit_Framework_TestCase
     );
   }
 
-  /** @covers CaptureStrategyCommand::execute */
+  /** @cover CaptureStrategyCommand::execute */
   public function testSaleExecute()
   {
     $this->paymentMock->expects($this->once())
@@ -167,7 +167,7 @@ class CaptureStrategyCommandTest extends \PHPUnit_Framework_TestCase
     $this->strategyCommand->execute([]);
   }
 
-  /** @covers CaptureStrategyCommand::execute */
+  /** @cover CaptureStrategyCommand::execute */
   public function testCaptureExecute()
   {
     $this->paymentMock->expects($this->once())

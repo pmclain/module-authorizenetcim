@@ -70,7 +70,7 @@ class CustomerDataBuilderTest extends \PHPUnit_Framework_TestCase
     );
   }
 
-  /** @covers CustomerDataBuilder::build */
+  /** @cover CustomerDataBuilder::build */
   public function testBuildNotLoggedIn()
   {
     $this->sessionMock->expects($this->once())
@@ -88,7 +88,7 @@ class CustomerDataBuilderTest extends \PHPUnit_Framework_TestCase
     );
   }
 
-  /** @covers CustomerDataBuilder::build */
+  /** @cover CustomerDataBuilder::build */
   public function testBuildCustomerHasCimProfile()
   {
     $cimProfileId = '123456789';
@@ -127,7 +127,7 @@ class CustomerDataBuilderTest extends \PHPUnit_Framework_TestCase
     );
   }
 
-  /** @covers CustomerDataBuilder::build */
+  /** @cover CustomerDataBuilder::build */
   public function testBuildCustomerWithoutCimProfile()
   {
     $customerId = '1';

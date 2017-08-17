@@ -179,7 +179,7 @@ class PaymentDataBuilderTest extends \PHPUnit_Framework_TestCase
     );
   }
 
-  /** @covers PaymentDataBuilder::build */
+  /** @cover PaymentDataBuilder::build */
   public function testBuild()
   {
     $ccToken = 'testToken';

@@ -70,7 +70,7 @@ class AdminTest extends \PHPUnit_Framework_TestCase
     );
   }
 
-  /** @covers CustomerDataBuilder::build */
+  /** @cover CustomerDataBuilder::build */
   public function testBuildNewCustomer()
   {
     $this->adminSessionMock->expects($this->once())
@@ -88,7 +88,7 @@ class AdminTest extends \PHPUnit_Framework_TestCase
     );
   }
 
-  /** @covers CustomerDataBuilder::build */
+  /** @cover CustomerDataBuilder::build */
   public function testBuildCustomerHasCimProfile()
   {
     $cimProfileId = '123456789';
@@ -123,7 +123,7 @@ class AdminTest extends \PHPUnit_Framework_TestCase
     );
   }
 
-  /** @covers CustomerDataBuilder::build */
+  /** @cover CustomerDataBuilder::build */
   public function testBuildCustomerWithoutCimProfile()
   {
     $customerId = '1';

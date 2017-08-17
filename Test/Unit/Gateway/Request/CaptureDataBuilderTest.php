@@ -79,7 +79,7 @@ class CaptureDataBuilderTest extends \PHPUnit_Framework_TestCase
     );
   }
 
-  /** @covers CaptureDataBuilder::build */
+  /** @cover CaptureDataBuilder::build */
   public function testBuild()
   {
     $this->paymentMock->expects($this->once())
@@ -104,7 +104,7 @@ class CaptureDataBuilderTest extends \PHPUnit_Framework_TestCase
   }
 
   /**
-   * @covers CaptureDataBuilder::build
+   * @cover CaptureDataBuilder::build
    * @expectedException \Magento\Framework\Exception\LocalizedException
    */
   public function testBuildWithoutTransactionId()
