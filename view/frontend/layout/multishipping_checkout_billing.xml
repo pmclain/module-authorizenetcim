@@ -1,0 +1,40 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Pmclain_AuthorizenetCim extension
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the GPL v3 License
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * https://www.gnu.org/licenses/gpl.txt
+ *
+ * @category  Pmclain
+ * @package   Pmclain_AuthorizenetCim
+ * @copyright Copyright (c) 2017
+ * @license   https://www.gnu.org/licenses/gpl.txt GPL v3 License
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="checkout_billing">
+            <action method="setMethodFormTemplate">
+                <argument name="method" xsi:type="string">pmclain_authorizenetcim</argument>
+                <argument name="template" xsi:type="string">Pmclain_AuthorizenetCim::form/cc.phtml</argument>
+            </action>
+        </referenceBlock>
+        <referenceBlock name="checkout_billing">
+            <action method="setMethodFormTemplate">
+                <argument name="method" xsi:type="string">pmclain_authorizenetcim_vault</argument>
+                <argument name="template" xsi:type="string">Magento_Vault::form/vault.phtml</argument>
+            </action>
+        </referenceBlock>
+        <referenceBlock name="content">
+            <block name="pmclain_authorizenetcim_payment_script"
+                   as="pmclain_authorizenetcim_payment_script"
+                   template="Pmclain_AuthorizenetCim::payment/script.phtml"
+                   class="Pmclain\AuthorizenetCim\Block\Payment"
+                   after="billing_method"/>
+        </referenceBlock>
+    </body>
+</page>
