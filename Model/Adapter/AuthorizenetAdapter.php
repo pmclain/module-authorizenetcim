@@ -21,6 +21,7 @@ use Magento\Framework\Exception\PaymentException;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use net\authorize\api\constants\ANetEnvironment;
 use net\authorize\api\contract\v1\MerchantAuthenticationType;
+use Pmclain\AuthorizenetCim\Model\Authorizenet\Payment;
 use Pmclain\AuthorizenetCim\Model\Authorizenet\Controller\CreateTransactionControllerFactory;
 use Pmclain\AuthorizenetCim\Model\Authorizenet\Controller\CreateCustomerPaymentProfileControllerFactory;
 use Pmclain\AuthorizenetCim\Model\Authorizenet\Controller\CreateCustomerProfileControllerFactory;
@@ -69,6 +70,9 @@ class AuthorizenetAdapter
   /** @var Config */
   protected $_config;
 
+  /** @var Payment */
+  protected $paymentProfile;
+
   public function __construct(
     MerchantAuthenticationType $merchantAuthenticationType,
     CreateCustomerProfileRequestFactory $createCustomerProfileRequestFactory,
@@ -81,7 +85,8 @@ class AuthorizenetAdapter
     CreateTransactionControllerFactory $createTransactionControllerFactory,
     CreateCustomerProfileControllerFactory $createCustomerProfileControllerFactory,
     CreateCustomerPaymentProfileControllerFactory $createCustomerPaymentProfileControllerFactory,
-    Config $config
+    Config $config,
+    Payment $payment
   ) {
     $this->_merchangeAuthentication = $merchantAuthenticationType;
     $this->_createCustomerProfileRequestFactory = $createCustomerProfileRequestFactory;
@@ -95,6 +100,7 @@ class AuthorizenetAdapter
     $this->_createTransactionControllerFactory = $createTransactionControllerFactory;
     $this->_createCustomerProfileControllerFactory = $createCustomerProfileControllerFactory;
     $this->_createCustomerPaymentProfileControllerFactory = $createCustomerPaymentProfileControllerFactory;
+    $this->paymentProfile = $payment;
     $this->_initMerchantAuthentication();
   }
 
@@ -142,6 +148,7 @@ class AuthorizenetAdapter
     $customerProfileResponse = $this->_createCustomerProfile($customerProfile);
 
     $data['payment_profile'] = $customerProfileResponse->getCustomerPaymentProfileIdList()[0];
+    $this->paymentProfile->setProfileId($data['payment_profile']);
     $data['profile_id'] = $customerProfileResponse->getCustomerProfileId();
 
     if ($data['customer_id']) {
@@ -160,7 +167,12 @@ class AuthorizenetAdapter
     $data['payment']->setBillTo($data['bill_to_address']);
     $customerPaymentProfileResponse = $this->_createCustomerPaymentProfile($data);
 
+    //TODO: if this has an error it should throw an exception. invalid authnet
+    // profile_id really mess this up
+
     $data['payment_profile'] = $customerPaymentProfileResponse->getCustomerPaymentProfileId();
+
+    $this->paymentProfile->setProfileId($data['payment_profile']);
 
     return $this->_sale($data);
   }

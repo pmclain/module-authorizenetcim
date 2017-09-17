@@ -1,13 +1,21 @@
 <?php
 /**
- * Copyright © 2013-2017 Magento, Inc. All rights reserved.
- * See COPYING.txt for license details.
+ * Pmclain_AuthorizenetCim extension
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the GPL v3 License
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * https://www.gnu.org/licenses/gpl.txt
+ *
+ * @category  Pmclain
+ * @package   Pmclain_AuthorizenetCim
+ * @copyright Copyright (c) 2017
+ * @license   https://www.gnu.org/licenses/gpl.txt GPL v3 License
  */
 
-// @codingStandardsIgnoreFile
-/**
- * @var \Magento\Payment\Block\Transparent\Form $block
- */
+/** @var Pmclain\AuthorizenetCim\Block\Form $block */
+
 $code = $block->escapeHtml($block->getMethodCode());
 $ccType = $block->getInfoData('cc_type');
 $ccExpMonth = $block->getInfoData('cc_exp_month');
@@ -107,6 +115,17 @@ $ccExpYear = $block->getInfoData('cc_exp_year');
                     </a>
                 </div>
             </div>
+        </div>
+    <?php endif; ?>
+    <?php if($block->isVaultEnabled()): ?>
+        <div class="field-tooltip-content">
+            <input type="checkbox"
+                   id="<?php /* @noEscape */ echo $code; ?>_vault"
+                   name="payment[is_active_payment_token_enabler]"
+                   class="control-checkbox"/>
+            <label class="label" for="<?php /* @noEscape */ echo $code; ?>_vault">
+                <span><?php echo $block->escapeHtml('Save for later use.'); ?></span>
+            </label>
         </div>
     <?php endif; ?>
     <input type="hidden" name="payment[cc_last4]" id="<?php echo $code ?>_cc_last4" />
