@@ -25,6 +25,7 @@ use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\PaymentTypeFactory;
 use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\TransactionRequestTypeFactory;
 use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\OrderTypeFactory;
 use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\CustomerPaymentProfileTypeFactory;
+use Pmclain\AuthorizenetCim\Model\Authorizenet\Payment;
 
 class PaymentDataBuilder implements BuilderInterface
 {
@@ -51,6 +52,9 @@ class PaymentDataBuilder implements BuilderInterface
   /** @var CustomerPaymentProfileTypeFactory */
   protected $_paymentProfileFactory;
 
+  /** @var Payment */
+  protected $payment;
+
   public function __construct(
     Config $config,
     SubjectReader $subjectReader,
@@ -58,7 +62,8 @@ class PaymentDataBuilder implements BuilderInterface
     PaymentTypeFactory $paymentTypeFactory,
     TransactionRequestTypeFactory $transactionRequestTypeFactory,
     OrderTypeFactory $orderTypeFactory,
-    CustomerPaymentProfileTypeFactory $customerPaymentProfileTypeFactory
+    CustomerPaymentProfileTypeFactory $customerPaymentProfileTypeFactory,
+    Payment $payment
   ) {
     $this->_config = $config;
     $this->_subjectReader = $subjectReader;
@@ -67,6 +72,7 @@ class PaymentDataBuilder implements BuilderInterface
     $this->_transactionRequestFactory = $transactionRequestTypeFactory;
     $this->_orderFactory = $orderTypeFactory;
     $this->_paymentProfileFactory = $customerPaymentProfileTypeFactory;
+    $this->payment = $payment;
   }
 
   public function build(array $subject)
@@ -98,7 +104,7 @@ class PaymentDataBuilder implements BuilderInterface
     $transactionRequest->setCurrencyCode($this->_config->getCurrency());
     $transactionRequest->setOrder($orderType);
 
-    return [
+    $result = [
       'capture' => false,
       'transaction_request' => $transactionRequest,
       'payment' => $paymentProfile,
@@ -108,8 +114,21 @@ class PaymentDataBuilder implements BuilderInterface
         'cc_type' => $payment->getAdditionalInformation('cc_type'),
         'cc_last4' => $payment->getAdditionalInformation('cc_last4'),
         'cc_exp_month' => $payment->getAdditionalInformation('cc_exp_month'),
-        'cc_exp_year' => $payment->getAdditionalInformation('cc_exp_year')
+        'cc_exp_year' => $payment->getAdditionalInformation('cc_exp_year'),
       ],
     ];
+
+      /**
+       * after opaque payment data has been converted to payment profile id it is stored
+       * in a singleton object. if that object has a profile id set it should be used.
+       * this creates support for multiple shipping addresses, since the purchase is split
+       * into a separate order for each address resulting in multiple authorization requests
+       * being sent to the merchant processor.
+       */
+    if ($this->payment->getProfileId()) {
+        $result['payment_profile'] = $this->payment->getProfileId();
+    }
+
+    return $result;
   }
 }

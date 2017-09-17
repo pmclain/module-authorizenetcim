@@ -1,0 +1,51 @@
+<?php
+/**
+ * Pmclain_AuthorizenetCim extension
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the GPL v3 License
+ * that is bundled with this package in the file LICENSE.txt.
+ * It is also available through the world-wide-web at this URL:
+ * https://www.gnu.org/licenses/gpl.txt
+ *
+ * @category  Pmclain
+ * @package   Pmclain_AuthorizenetCim
+ * @copyright Copyright (c) 2017
+ * @license   https://www.gnu.org/licenses/gpl.txt GPL v3 License
+ */
+
+/** @var \Pmclain\AuthorizenetCim\Block\Vault\Tokens $block */
+?>
+<?php foreach ($block->getCustomerTokens() as $token): ?>
+    <?php $details = json_decode($token->getTokenDetails(), true); ?>
+    <div id="payment_<?php /* @noEscape */ echo $token->getEntityId();?>" class="field">
+        <div class="control">
+            <input type="radio"
+                   id="token_switcher_<?php /* @noEscape */ echo $token->getEntityId(); ?>"
+                   name="payment[token_switcher]" />
+            <?php if ($icon = $block->getIcon($details['type'])): ?>
+                <img src="<?php echo $block->escapeUrl($icon['url']); ?>"
+                     width="<?php echo $block->escapeHtml($icon['width']); ?>"
+                     height="<?php echo $block->escapeHtml($icon['height']); ?>"
+                     class="payment-icon" >
+            <?php endif; ?>
+            <span><?php echo $block->escapeHtml(__('ending'));?></span>
+            <span><?php echo $block->escapeHtml($details['maskedCC']); ?></span>
+            (<span><?php echo $block->escapeHtml(__('expires'));?></span>:
+            <span><?php echo $block->escapeHtml($details['expirationDate']); ?></span>)
+        </div>
+    </div>
+    <script>
+        //<![CDATA[
+        require(
+            [
+                'Pmclain_AuthorizenetCim/js/vault'
+            ], function(PmVault) {
+                payment = new PmVault({
+                    "container": "payment_<?php /* @noEscape */ echo $token->getEntityId(); ?>",
+                    "publicHash": "<?php echo $block->escapeHtml($token->getPublicHash()); ?>"
+                });
+            });
+        //]]>
+    </script>
+<?php endforeach;
