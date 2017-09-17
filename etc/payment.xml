@@ -21,8 +21,8 @@
         <method name="pmclain_authorizenetcim">
             <allow_multiple_address>1</allow_multiple_address>
         </method>
-        <!--<method name="pmclain_authorizenetcim_vault">-->
-            <!--<allow_multiple_address>1</allow_multiple_address>-->
-        <!--</method>-->
+        <method name="pmclain_authorizenetcim_vault">
+            <allow_multiple_address>1</allow_multiple_address>
+        </method>
     </methods>
 </payment>

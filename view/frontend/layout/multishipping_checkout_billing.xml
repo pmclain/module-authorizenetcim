@@ -26,8 +26,11 @@
         <referenceBlock name="checkout_billing">
             <action method="setMethodFormTemplate">
                 <argument name="method" xsi:type="string">pmclain_authorizenetcim_vault</argument>
-                <argument name="template" xsi:type="string">Magento_Vault::form/vault.phtml</argument>
+                <argument name="template" xsi:type="string">Pmclain_AuthorizenetCim::form/vault.phtml</argument>
             </action>
+            <block name="pmclain_authorizenetcim_vault_tokens"
+                   template="Pmclain_AuthorizenetCim::form/vault/tokens.phtml"
+                   class="Pmclain\AuthorizenetCim\Block\Vault\Tokens" />
         </referenceBlock>
         <referenceBlock name="content">
             <block name="pmclain_authorizenetcim_payment_script"
