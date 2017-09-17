@@ -94,9 +94,9 @@ class VaultDetailsHandler implements HandlerInterface
   private function _getExpirationDate($payment)
   {
     $expDate = new \DateTime(
-      $payment->getAdditionalInformation('cc_exp_year')
+      trim($payment->getAdditionalInformation('cc_exp_year'))
       . '-'
-      . $payment->getAdditionalInformation('cc_exp_month')
+      . trim($payment->getAdditionalInformation('cc_exp_month'))
       . '-'
       . '01'
       . ' '
