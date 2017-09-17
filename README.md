@@ -12,6 +12,7 @@ frontend or backend.
 * New payments can be authorize or authorize and capture.
 * Authorized payments can be captured online during invoice creation.
 * Full and partial refund support when creating credit memos.
+* Support for Multiple Shipping Addresses
 
 ## Installation
 In your Magento 2 root directory run  
@@ -21,6 +22,13 @@ In your Magento 2 root directory run
 ## Configuration
 The configuration can be found in the Magento 2 admin panel under  
 Store->Configuration->Sales->Payment Methods->Authorize.net CIM  
+
+## Magento Version Support
+| Module Version | Magento Version |
+| -------------- | --------------- |
+| v0.1.x         | v2.1.x          |
+| None           | v2.0.x          |
+
 
 #### Accept.js and Test mode
 Test Mode requires your checkout and admin pages use the HTTPS protocol even
