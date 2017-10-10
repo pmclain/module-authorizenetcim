@@ -7,17 +7,7 @@
   ],
   "require": {
     "php": "~5.6.0|~7.0.0|~7.1.0",
-    "magento/framework": "~100.0.0|~100.1.0",
-    "magento/module-config": "~100.0.0|~100.1.0",
-    "magento/module-payment": "~100.0.0|~100.1.0",
-    "magento/module-checkout": "~100.0.0|~100.1.0",
-    "magento/module-sales": "~100.0.0|~100.1.0",
-    "magento/module-backend": "~100.0.0|~100.1.0",
-    "magento/module-customer": "~100.0.0|~100.1.0",
-    "magento/module-catalog": "~101.0.0|~101.1.0",
-    "magento/module-quote": "~100.0.0|~100.1.0",
-    "magento/module-ui": "~100.0.0|~100.1.0",
-    "magento/module-vault": "~100.1.0|~100.2.0",
+    "magento/framework": "~100.1.0|~101.0.0",
     "authorizenet/authorizenet": "~1.9"
   },
   "autoload": {
