@@ -26,6 +26,7 @@ Store->Configuration->Sales->Payment Methods->Authorize.net CIM
 ## Magento Version Support
 | Module Version | Magento Version |
 | -------------- | --------------- |
+| v0.1.x         | v2.2.x          |
 | v0.1.x         | v2.1.x          |
 | None           | v2.0.x          |
 
