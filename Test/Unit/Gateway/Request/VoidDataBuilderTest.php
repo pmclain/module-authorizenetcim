@@ -25,7 +25,7 @@ use \PHPUnit_Framework_MockObject_MockObject as MockObject;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\TransactionRequestTypeFactory;
 
-class VoidDataBuilderTest extends \PHPUnit_Framework_TestCase
+class VoidDataBuilderTest extends \PHPUnit\Framework\TestCase
 {
   /** @var VoidDataBuilder */
   private $voidDataBuilder;

@@ -19,7 +19,7 @@ namespace Pmclain\AuthorizenetCim\Test\Unit\Gateway\Request;
 use Pmclain\AuthorizenetCim\Gateway\Request\SettlementDataBuilder;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 
-class SettlementDataBuilderTest extends \PHPUnit_Framework_TestCase
+class SettlementDataBuilderTest extends \PHPUnit\Framework\TestCase
 {
   public function testBuild()
   {

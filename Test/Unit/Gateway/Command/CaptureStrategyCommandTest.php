@@ -29,7 +29,7 @@ use Magento\Sales\Api\Data\TransactionSearchResultInterface;
 use Magento\Framework\Api\FilterBuilder;
 use Magento\Payment\Gateway\Command\CommandPoolInterface;
 
-class CaptureStrategyCommandTest extends \PHPUnit_Framework_TestCase
+class CaptureStrategyCommandTest extends \PHPUnit\Framework\TestCase
 {
   /** @var CaptureStrategyCommand */
   private $strategyCommand;

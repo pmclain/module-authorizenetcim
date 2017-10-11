@@ -25,7 +25,7 @@ use net\authorize\api\contract\v1\CreateTransactionResponse;
 use net\authorize\api\contract\v1\TransactionResponseType;
 use Pmclain\AuthorizenetCim\Gateway\Response\VoidHandler;
 
-class VoidHandlerTest extends \PHPUnit_Framework_TestCase
+class VoidHandlerTest extends \PHPUnit\Framework\TestCase
 {
   /** @var VoidHandler */
   private $voidHandler;

@@ -25,7 +25,7 @@ use net\authorize\api\contract\v1\MessagesType;
 use net\authorize\api\contract\v1\TransactionResponseType\MessagesAType\MessageAType;
 use Magento\Payment\Gateway\Validator\ResultInterfaceFactory;
 
-class GeneralResponseValidatorTest extends \PHPUnit_Framework_TestCase
+class GeneralResponseValidatorTest extends \PHPUnit\Framework\TestCase
 {
   /** @var GeneralResponseValidator */
   private $generalResponseValidator;

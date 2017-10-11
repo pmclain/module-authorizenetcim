@@ -25,7 +25,7 @@ use net\authorize\api\contract\v1\TransactionRequestType;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Payment\Model\InfoInterface;
 
-class CaptureDataBuilderTest extends \PHPUnit_Framework_TestCase
+class CaptureDataBuilderTest extends \PHPUnit\Framework\TestCase
 {
   /** @var CaptureDataBuilder */
   private $captureDataBuilder;

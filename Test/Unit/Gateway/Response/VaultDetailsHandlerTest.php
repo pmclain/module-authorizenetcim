@@ -31,7 +31,7 @@ use net\authorize\api\contract\v1\TransactionResponseType;
 use net\authorize\api\contract\v1\CustomerProfileIdType;
 use Magento\Payment\Model\InfoInterface;
 
-class VaultDetailsHandlerTest extends \PHPUnit_Framework_TestCase
+class VaultDetailsHandlerTest extends \PHPUnit\Framework\TestCase
 {
   /** @var VaultDetailsHandler */
   private $vaultDetailsHandler;

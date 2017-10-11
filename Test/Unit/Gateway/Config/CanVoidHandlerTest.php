@@ -23,7 +23,7 @@ use Pmclain\AuthorizenetCim\Gateway\Helper\SubjectReader;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Sales\Model\Order\Payment;
 
-class CanVoidHandlerTest extends \PHPUnit_Framework_TestCase
+class CanVoidHandlerTest extends \PHPUnit\Framework\TestCase
 {
   /** @var CanVoidHandler */
   private $canVoidHandler;

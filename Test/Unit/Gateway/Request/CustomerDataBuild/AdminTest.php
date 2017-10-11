@@ -24,7 +24,7 @@ use Magento\Customer\Api\Data\CustomerInterface;
 use Magento\Backend\Model\Session\Quote;
 use Magento\Framework\Api\AttributeInterface;
 
-class AdminTest extends \PHPUnit_Framework_TestCase
+class AdminTest extends \PHPUnit\Framework\TestCase
 {
   /** @var Admin */
   private $customerDataBuilder;

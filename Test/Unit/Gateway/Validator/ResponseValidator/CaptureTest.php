@@ -26,7 +26,7 @@ use net\authorize\api\contract\v1\TransactionResponseType;
 use net\authorize\api\contract\v1\TransactionResponseType\MessagesAType\MessageAType;
 use Magento\Payment\Gateway\Validator\ResultInterfaceFactory;
 
-class CaptureTest extends \PHPUnit_Framework_TestCase
+class CaptureTest extends \PHPUnit\Framework\TestCase
 {
   /** @var Capture */
   private $captureValidator;

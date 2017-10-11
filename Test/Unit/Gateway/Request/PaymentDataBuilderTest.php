@@ -42,7 +42,7 @@ use net\authorize\api\contract\v1\TransactionRequestType;
 use net\authorize\api\contract\v1\OrderType;
 use net\authorize\api\contract\v1\CustomerPaymentProfileType;
 
-class PaymentDataBuilderTest extends \PHPUnit_Framework_TestCase
+class PaymentDataBuilderTest extends \PHPUnit\Framework\TestCase
 {
   /** @var PaymentDataBuilder */
   private $paymentDataBuilder;

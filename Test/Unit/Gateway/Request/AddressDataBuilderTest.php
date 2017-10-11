@@ -26,7 +26,7 @@ use Magento\Payment\Gateway\Data\OrderAdapterInterface;
 use Magento\Payment\Gateway\Data\AddressAdapterInterface;
 use net\authorize\api\contract\v1\CustomerAddressType;
 
-class AddressDataBuilderTest extends \PHPUnit_Framework_TestCase
+class AddressDataBuilderTest extends \PHPUnit\Framework\TestCase
 {
   /** @var AddressDataBuilder */
   private $addressDataBuilder;

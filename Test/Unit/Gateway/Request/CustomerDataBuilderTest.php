@@ -24,7 +24,7 @@ use Magento\Customer\Api\Data\CustomerInterface;
 use Magento\Customer\Model\Session;
 use Magento\Framework\Api\AttributeInterface;
 
-class CustomerDataBuilderTest extends \PHPUnit_Framework_TestCase
+class CustomerDataBuilderTest extends \PHPUnit\Framework\TestCase
 {
   /** @var CustomerDataBuilder */
   private $customerDataBuilder;

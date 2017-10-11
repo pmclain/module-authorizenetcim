@@ -25,7 +25,7 @@ use Pmclain\AuthorizenetCim\Gateway\Helper\SubjectReader;
 use Magento\Sales\Api\Data\OrderPaymentExtension;
 use Magento\Vault\Api\Data\PaymentTokenInterface;
 
-class TokenDataBuilderTest extends \PHPUnit_Framework_TestCase
+class TokenDataBuilderTest extends \PHPUnit\Framework\TestCase
 {
   /** @var TokenDataBuilder */
   private $tokenDataBuilder;

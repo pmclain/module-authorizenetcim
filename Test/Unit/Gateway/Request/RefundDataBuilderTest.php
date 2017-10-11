@@ -29,7 +29,7 @@ use net\authorize\api\contract\v1\TransactionRequestType;
 use net\authorize\api\contract\v1\PaymentType;
 use net\authorize\api\contract\v1\CreditCardType;
 
-class RefundDataBuilderTest extends \PHPUnit_Framework_TestCase
+class RefundDataBuilderTest extends \PHPUnit\Framework\TestCase
 {
   /** @var RefundDataBuilder */
   private $refundDataBuilder;

@@ -26,7 +26,7 @@ use net\authorize\api\contract\v1\TransactionResponseType;
 use net\authorize\api\contract\v1\TransactionResponseType\MessagesAType\MessageAType;
 use Magento\Payment\Gateway\Validator\ResultInterfaceFactory;
 
-class AuthorizeTest extends \PHPUnit_Framework_TestCase
+class AuthorizeTest extends \PHPUnit\Framework\TestCase
 {
   /** @var Authorize */
   private $authorizeValidator;

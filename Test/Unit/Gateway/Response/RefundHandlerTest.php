@@ -27,7 +27,7 @@ use Magento\Sales\Model\Order\Payment;
 use net\authorize\api\contract\v1\CreateTransactionResponse;
 use net\authorize\api\contract\v1\TransactionResponseType;
 
-class RefundHandlerTest extends \PHPUnit_Framework_TestCase
+class RefundHandlerTest extends \PHPUnit\Framework\TestCase
 {
   /** @var RefundHandler */
   private $refundHandler;

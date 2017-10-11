@@ -25,7 +25,7 @@ use Magento\Sales\Model\Order\Payment;
 use net\authorize\api\contract\v1\CreateTransactionResponse;
 use net\authorize\api\contract\v1\TransactionResponseType;
 
-class CardDetailsHandlerTest extends \PHPUnit_Framework_TestCase
+class CardDetailsHandlerTest extends \PHPUnit\Framework\TestCase
 {
   /** @var CardDetailsHandler */
   private $cardDetailsHandler;
