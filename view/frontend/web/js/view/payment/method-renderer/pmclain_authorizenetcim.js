@@ -150,7 +150,7 @@ define(
         var self = this;
         var acceptjsDep = 'acceptjs';
 
-        if (self.getIsTest() == "1") {
+        if (self.getIsTest() === ?) {
           acceptjsDep = 'acceptjstest';
         }
         requirejs([acceptjsDep], function (acceptjs) {
