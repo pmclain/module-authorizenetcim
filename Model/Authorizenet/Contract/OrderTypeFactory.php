@@ -27,6 +27,6 @@ class OrderTypeFactory extends AbstractFactory
      */
     public function create($sourceData = null)
     {
-        return $this->_objectManager->create(OrderType::class);
+        return new OrderType();
     }
 }

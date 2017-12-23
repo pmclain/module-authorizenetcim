@@ -27,6 +27,6 @@ class OpaqueDataTypeFactory extends AbstractFactory
      */
     public function create($sourceData = null)
     {
-        return $this->_objectManager->create(OpaqueDataType::class);
+        return new OpaqueDataType();
     }
 }

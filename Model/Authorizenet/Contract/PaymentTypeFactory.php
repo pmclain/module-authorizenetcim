@@ -27,6 +27,6 @@ class PaymentTypeFactory extends AbstractFactory
      */
     public function create($sourceData = null)
     {
-        return $this->_objectManager->create(PaymentType::class);
+        return new PaymentType();
     }
 }

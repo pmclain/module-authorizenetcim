@@ -27,6 +27,6 @@ class CustomerAddressTypeFactory extends AbstractFactory
      */
     public function create($sourceData = null)
     {
-        return $this->_objectManager->create(CustomerAddressType::class);
+        return new CustomerAddressType();
     }
 }

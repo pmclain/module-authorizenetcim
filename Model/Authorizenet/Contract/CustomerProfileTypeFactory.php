@@ -27,6 +27,6 @@ class CustomerProfileTypeFactory extends AbstractFactory
      */
     public function create($sourceData = null)
     {
-        return $this->_objectManager->create(CustomerProfileType::class);
+        return new CustomerProfileType();
     }
 }

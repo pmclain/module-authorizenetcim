@@ -27,6 +27,6 @@ class CreditCardTypeFactory extends AbstractFactory
      */
     public function create($sourceData = null)
     {
-        return $this->_objectManager->create(CreditCardType::class);
+        return new CreditCardType();
     }
 }

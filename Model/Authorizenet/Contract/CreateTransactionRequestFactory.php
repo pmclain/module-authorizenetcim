@@ -27,6 +27,6 @@ class CreateTransactionRequestFactory extends AbstractFactory
      */
     public function create($sourceData = null)
     {
-        return $this->_objectManager->create(CreateTransactionRequest::class);
+        return new CreateTransactionRequest();
     }
 }
