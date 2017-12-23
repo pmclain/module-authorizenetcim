@@ -58,9 +58,9 @@ define(
             fullScreenLoader.stopLoader();
             self.isPlaceOrderActionAllowed(true);
 
-            for (var i = 0; i < response.messages.message.length; i++) {
+            for (var i = 0; i < result.length; i++) {
               self.messageContainer.addErrorMessage({
-                'message': response.messages.message[i].code + ": " + response.messages.message[i].text
+                'message': result[i].code + ": " + result[i].text
               });
             }
           });
