@@ -21,15 +21,15 @@ use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 
 class SettlementDataBuilderTest extends \PHPUnit\Framework\TestCase
 {
-  public function testBuild()
-  {
-    $objectManager = new ObjectManager($this);
+    public function testBuild()
+    {
+        $objectManager = new ObjectManager($this);
 
-    $settlementDataBuilder = $objectManager->getObject(SettlementDataBuilder::class);
+        $settlementDataBuilder = $objectManager->getObject(SettlementDataBuilder::class);
 
-    $this->assertEquals(
-      ['capture' => true],
-      $settlementDataBuilder->build([])
-    );
-  }
+        $this->assertEquals(
+            ['capture' => true],
+            $settlementDataBuilder->build([])
+        );
+    }
 }

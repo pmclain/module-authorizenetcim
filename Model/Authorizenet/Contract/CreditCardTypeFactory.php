@@ -21,12 +21,12 @@ use Pmclain\AuthorizenetCim\Model\Authorizenet\AbstractFactory;
 
 class CreditCardTypeFactory extends AbstractFactory
 {
-  /**
-   * @param $sourceData
-   * @return CreditCardType
-   */
-  public function create($sourceData = null)
-  {
-    return $this->_objectManager->create(CreditCardType::class);
-  }
+    /**
+     * @param $sourceData
+     * @return CreditCardType
+     */
+    public function create($sourceData = null)
+    {
+        return $this->_objectManager->create(CreditCardType::class);
+    }
 }

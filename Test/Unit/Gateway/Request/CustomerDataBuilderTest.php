@@ -26,138 +26,139 @@ use Magento\Framework\Api\AttributeInterface;
 
 class CustomerDataBuilderTest extends \PHPUnit\Framework\TestCase
 {
-  /** @var CustomerDataBuilder */
-  private $customerDataBuilder;
+    /** @var CustomerDataBuilder */
+    private $customerDataBuilder;
 
-  /** @var CustomerRepositoryInterface|MockObject */
-  private $customerRespositoryMock;
+    /** @var CustomerRepositoryInterface|MockObject */
+    private $customerRespositoryMock;
 
-  /** @var CustomerInterface|MockObject */
-  private $customerMock;
+    /** @var CustomerInterface|MockObject */
+    private $customerMock;
 
-  /** @var Session|MockObject */
-  private $sessionMock;
+    /** @var Session|MockObject */
+    private $sessionMock;
 
-  /** @var AttributeInterface|MockObject */
-  private $attributeMock;
+    /** @var AttributeInterface|MockObject */
+    private $attributeMock;
 
-  protected function setUp()
-  {
-    $objectManager = new ObjectManager($this);
+    protected function setUp()
+    {
+        $objectManager = new ObjectManager($this);
 
-    $this->customerRespositoryMock = $this->getMockBuilder(CustomerRepositoryInterface::class)
-      ->setMethods(['getById'])
-      ->getMockForAbstractClass();
+        $this->customerRespositoryMock = $this->getMockBuilder(CustomerRepositoryInterface::class)
+            ->setMethods(['getById'])
+            ->getMockForAbstractClass();
 
-    $this->customerMock = $this->getMockBuilder(CustomerInterface::class)
-      ->setMethods(['getCustomAttribute'])
-      ->getMockForAbstractClass();
+        $this->customerMock = $this->getMockBuilder(CustomerInterface::class)
+            ->setMethods(['getCustomAttribute'])
+            ->getMockForAbstractClass();
 
-    $this->sessionMock = $this->getMockBuilder(Session::class)
-      ->disableOriginalConstructor()
-      ->setMethods(['isLoggedIn','getCustomerId'])
-      ->getMock();
+        $this->sessionMock = $this->getMockBuilder(Session::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['isLoggedIn', 'getCustomerId'])
+            ->getMock();
 
-    $this->attributeMock = $this->getMockBuilder(AttributeInterface::class)
-      ->setMethods(['getValue'])
-      ->getMockForAbstractClass();
+        $this->attributeMock = $this->getMockBuilder(AttributeInterface::class)
+            ->setMethods(['getValue'])
+            ->getMockForAbstractClass();
 
-    $this->customerDataBuilder = $objectManager->getObject(CustomerDataBuilder::class,
-      [
-        '_session' => $this->sessionMock,
-        '_customerRepository' => $this->customerRespositoryMock,
-      ]
-    );
-  }
+        $this->customerDataBuilder = $objectManager->getObject(
+            CustomerDataBuilder::class,
+            [
+                '_session' => $this->sessionMock,
+                '_customerRepository' => $this->customerRespositoryMock,
+            ]
+        );
+    }
 
-  /** @cover CustomerDataBuilder::build */
-  public function testBuildNotLoggedIn()
-  {
-    $this->sessionMock->expects($this->once())
-      ->method('isLoggedIn')
-      ->willReturn(false);
+    /** @cover CustomerDataBuilder::build */
+    public function testBuildNotLoggedIn()
+    {
+        $this->sessionMock->expects($this->once())
+            ->method('isLoggedIn')
+            ->willReturn(false);
 
-    $result = $this->customerDataBuilder->build([]);
+        $result = $this->customerDataBuilder->build([]);
 
-    $this->assertEquals(
-      [
-        'customer_id' => null,
-        'profile_id' => null,
-      ],
-      $result
-    );
-  }
+        $this->assertEquals(
+            [
+                'customer_id' => null,
+                'profile_id' => null,
+            ],
+            $result
+        );
+    }
 
-  /** @cover CustomerDataBuilder::build */
-  public function testBuildCustomerHasCimProfile()
-  {
-    $cimProfileId = '123456789';
-    $customerId = '1';
+    /** @cover CustomerDataBuilder::build */
+    public function testBuildCustomerHasCimProfile()
+    {
+        $cimProfileId = '123456789';
+        $customerId = '1';
 
-    $this->sessionMock->expects($this->once())
-      ->method('isLoggedIn')
-      ->willReturn(true);
+        $this->sessionMock->expects($this->once())
+            ->method('isLoggedIn')
+            ->willReturn(true);
 
-    $this->sessionMock->expects($this->exactly(2))
-      ->method('getCustomerId')
-      ->willReturn($customerId);
+        $this->sessionMock->expects($this->exactly(2))
+            ->method('getCustomerId')
+            ->willReturn($customerId);
 
-    $this->customerRespositoryMock->expects($this->once())
-      ->method('getById')
-      ->with($customerId)
-      ->willReturn($this->customerMock);
+        $this->customerRespositoryMock->expects($this->once())
+            ->method('getById')
+            ->with($customerId)
+            ->willReturn($this->customerMock);
 
-    $this->customerMock->expects($this->once())
-      ->method('getCustomAttribute')
-      ->with('authorizenet_cim_profile_id')
-      ->willReturn($this->attributeMock);
+        $this->customerMock->expects($this->once())
+            ->method('getCustomAttribute')
+            ->with('authorizenet_cim_profile_id')
+            ->willReturn($this->attributeMock);
 
-    $this->attributeMock->expects($this->once())
-      ->method('getValue')
-      ->willReturn($cimProfileId);
+        $this->attributeMock->expects($this->once())
+            ->method('getValue')
+            ->willReturn($cimProfileId);
 
-    $result = $this->customerDataBuilder->build([]);
+        $result = $this->customerDataBuilder->build([]);
 
-    $this->assertEquals(
-      [
-        'customer_id' => $customerId,
-        'profile_id' => $cimProfileId,
-      ],
-      $result
-    );
-  }
+        $this->assertEquals(
+            [
+                'customer_id' => $customerId,
+                'profile_id' => $cimProfileId,
+            ],
+            $result
+        );
+    }
 
-  /** @cover CustomerDataBuilder::build */
-  public function testBuildCustomerWithoutCimProfile()
-  {
-    $customerId = '1';
+    /** @cover CustomerDataBuilder::build */
+    public function testBuildCustomerWithoutCimProfile()
+    {
+        $customerId = '1';
 
-    $this->sessionMock->expects($this->once())
-      ->method('isLoggedIn')
-      ->willReturn(true);
+        $this->sessionMock->expects($this->once())
+            ->method('isLoggedIn')
+            ->willReturn(true);
 
-    $this->sessionMock->expects($this->exactly(2))
-      ->method('getCustomerId')
-      ->willReturn($customerId);
+        $this->sessionMock->expects($this->exactly(2))
+            ->method('getCustomerId')
+            ->willReturn($customerId);
 
-    $this->customerRespositoryMock->expects($this->once())
-      ->method('getById')
-      ->with($customerId)
-      ->willReturn($this->customerMock);
+        $this->customerRespositoryMock->expects($this->once())
+            ->method('getById')
+            ->with($customerId)
+            ->willReturn($this->customerMock);
 
-    $this->customerMock->expects($this->once())
-      ->method('getCustomAttribute')
-      ->with('authorizenet_cim_profile_id')
-      ->willReturn(null);
+        $this->customerMock->expects($this->once())
+            ->method('getCustomAttribute')
+            ->with('authorizenet_cim_profile_id')
+            ->willReturn(null);
 
-    $result = $this->customerDataBuilder->build([]);
+        $result = $this->customerDataBuilder->build([]);
 
-    $this->assertEquals(
-      [
-        'customer_id' => $customerId,
-        'profile_id' => null,
-      ],
-      $result
-    );
-  }
+        $this->assertEquals(
+            [
+                'customer_id' => $customerId,
+                'profile_id' => null,
+            ],
+            $result
+        );
+    }
 }

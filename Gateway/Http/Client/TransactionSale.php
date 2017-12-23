@@ -18,13 +18,13 @@ namespace Pmclain\AuthorizenetCim\Gateway\Http\Client;
 
 class TransactionSale extends AbstractTransaction
 {
-  protected function process(array $data)
-  {
-    if (isset($data['payment_profile'])) {
-      return $this->_adapter->saleForVault($data);
-    } elseif (isset($data['profile_id'])) {
-      return $this->_adapter->saleForExistingProfile($data);
+    protected function process(array $data)
+    {
+        if (isset($data['payment_profile'])) {
+            return $this->_adapter->saleForVault($data);
+        } elseif (isset($data['profile_id'])) {
+            return $this->_adapter->saleForExistingProfile($data);
+        }
+        return $this->_adapter->saleForNewProfile($data);
     }
-    return $this->_adapter->saleForNewProfile($data);
-  }
 }

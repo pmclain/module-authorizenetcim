@@ -25,54 +25,54 @@ use Psr\Log\LoggerInterface;
 
 abstract class AbstractTransaction implements ClientInterface
 {
-  /** @var LoggerInterface */
-  protected $_logger;
+    /** @var LoggerInterface */
+    protected $_logger;
 
-  /** @var Logger */
-  protected $_customLogger;
+    /** @var Logger */
+    protected $_customLogger;
 
-  /** @var AuthorizenetAdapter */
-  protected $_adapter;
+    /** @var AuthorizenetAdapter */
+    protected $_adapter;
 
-  /**
-   * AbstractTransaction constructor.
-   * @param LoggerInterface $logger
-   * @param Logger $customLogger
-   * @param AuthorizenetAdapter $adapter
-   */
-  public function __construct(
-    LoggerInterface $logger,
-    Logger $customLogger,
-    AuthorizenetAdapter $adapter
-  ) {
-    $this->_logger = $logger;
-    $this->_customLogger = $customLogger;
-    $this->_adapter = $adapter;
-  }
-
-  public function placeRequest(TransferInterface $transferObject)
-  {
-    $data = $transferObject->getBody();
-    $log = [
-      'request' => $data,
-      'client' => static::class
-    ];
-
-    $response['object'] = [];
-
-    try {
-      $response['object'] = $this->process($data);
-    } catch (\Exception $e) {
-      $message = __($e->getMessage() ?: 'Sorry, but something went wrong.');
-      $this->_logger->critical($message);
-      throw new ClientException($message);
-    } finally {
-      $log['response'] = (array) $response['object'];
-      $this->_customLogger->debug($log);
+    /**
+     * AbstractTransaction constructor.
+     * @param LoggerInterface $logger
+     * @param Logger $customLogger
+     * @param AuthorizenetAdapter $adapter
+     */
+    public function __construct(
+        LoggerInterface $logger,
+        Logger $customLogger,
+        AuthorizenetAdapter $adapter
+    ) {
+        $this->_logger = $logger;
+        $this->_customLogger = $customLogger;
+        $this->_adapter = $adapter;
     }
 
-    return $response;
-  }
+    public function placeRequest(TransferInterface $transferObject)
+    {
+        $data = $transferObject->getBody();
+        $log = [
+            'request' => $data,
+            'client' => static::class
+        ];
 
-  abstract protected function process(array $data);
+        $response['object'] = [];
+
+        try {
+            $response['object'] = $this->process($data);
+        } catch (\Exception $e) {
+            $message = __($e->getMessage() ?: 'Sorry, but something went wrong.');
+            $this->_logger->critical($message);
+            throw new ClientException($message);
+        } finally {
+            $log['response'] = (array)$response['object'];
+            $this->_customLogger->debug($log);
+        }
+
+        return $response;
+    }
+
+    abstract protected function process(array $data);
 }

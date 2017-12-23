@@ -27,97 +27,98 @@ use Magento\Payment\Model\InfoInterface;
 
 class CaptureDataBuilderTest extends \PHPUnit\Framework\TestCase
 {
-  /** @var CaptureDataBuilder */
-  private $captureDataBuilder;
+    /** @var CaptureDataBuilder */
+    private $captureDataBuilder;
 
-  /** @var SubjectReader */
-  private $subjectReader;
+    /** @var SubjectReader */
+    private $subjectReader;
 
-  /** @var TransactionRequestTypeFactory|MockObject */
-  private $transactionRequestFactoryMock;
+    /** @var TransactionRequestTypeFactory|MockObject */
+    private $transactionRequestFactoryMock;
 
-  /** @var TransactionRequestType */
-  private $transactionRequest;
+    /** @var TransactionRequestType */
+    private $transactionRequest;
 
-  /** @var PaymentDataObjectInterface|MockObject */
-  private $paymentDataObjectMock;
+    /** @var PaymentDataObjectInterface|MockObject */
+    private $paymentDataObjectMock;
 
-  /** @var InfoInterface|MockObject */
-  private $paymentMock;
+    /** @var InfoInterface|MockObject */
+    private $paymentMock;
 
-  protected function setUp()
-  {
-    $objectManager = new ObjectManager($this);
+    protected function setUp()
+    {
+        $objectManager = new ObjectManager($this);
 
-    $this->subjectReader = $objectManager->getObject(SubjectReader::class);
+        $this->subjectReader = $objectManager->getObject(SubjectReader::class);
 
-    $this->transactionRequestFactoryMock = $this->getMockBuilder(TransactionRequestTypeFactory::class)
-      ->disableOriginalConstructor()
-      ->setMethods(['create'])
-      ->getMock();
+        $this->transactionRequestFactoryMock = $this->getMockBuilder(TransactionRequestTypeFactory::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
 
-    $this->transactionRequest = $objectManager->getObject(TransactionRequestType::class);
+        $this->transactionRequest = $objectManager->getObject(TransactionRequestType::class);
 
-    $this->paymentDataObjectMock = $this->getMockBuilder(PaymentDataObjectInterface::class)
-      ->setMethods(['getPayment'])
-      ->getMockForAbstractClass();
+        $this->paymentDataObjectMock = $this->getMockBuilder(PaymentDataObjectInterface::class)
+            ->setMethods(['getPayment'])
+            ->getMockForAbstractClass();
 
-    $this->paymentMock = $this->getMockBuilder(InfoInterface::class)
-      ->disableOriginalConstructor()
-      ->setMethods(['getCcTransId'])
-      ->getMockForAbstractClass();
+        $this->paymentMock = $this->getMockBuilder(InfoInterface::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getCcTransId'])
+            ->getMockForAbstractClass();
 
-    $this->paymentDataObjectMock->expects($this->once())
-      ->method('getPayment')
-      ->willReturn($this->paymentMock);
+        $this->paymentDataObjectMock->expects($this->once())
+            ->method('getPayment')
+            ->willReturn($this->paymentMock);
 
-    $this->captureDataBuilder = $objectManager->getObject(CaptureDataBuilder::class,
-      [
-        '_subjectReader' => $this->subjectReader,
-        '_transactionRequestFactory' => $this->transactionRequestFactoryMock
-      ]
-    );
-  }
+        $this->captureDataBuilder = $objectManager->getObject(
+            CaptureDataBuilder::class,
+            [
+                '_subjectReader' => $this->subjectReader,
+                '_transactionRequestFactory' => $this->transactionRequestFactoryMock
+            ]
+        );
+    }
 
-  /** @cover CaptureDataBuilder::build */
-  public function testBuild()
-  {
-    $this->paymentMock->expects($this->once())
-      ->method('getCcTransId')
-      ->willReturn('123456789');
+    /** @cover CaptureDataBuilder::build */
+    public function testBuild()
+    {
+        $this->paymentMock->expects($this->once())
+            ->method('getCcTransId')
+            ->willReturn('123456789');
 
-    $this->transactionRequestFactoryMock->expects($this->once())
-      ->method('create')
-      ->willReturn($this->transactionRequest);
+        $this->transactionRequestFactoryMock->expects($this->once())
+            ->method('create')
+            ->willReturn($this->transactionRequest);
 
-    $subject = [
-      'payment' => $this->paymentDataObjectMock,
-      'amount' => '1.00',
-    ];
+        $subject = [
+            'payment' => $this->paymentDataObjectMock,
+            'amount' => '1.00',
+        ];
 
-    $result = $this->captureDataBuilder->build($subject);
+        $result = $this->captureDataBuilder->build($subject);
 
-    $this->assertInstanceOf(
-      TransactionRequestType::class,
-      $result['transaction_request']
-    );
-  }
+        $this->assertInstanceOf(
+            TransactionRequestType::class,
+            $result['transaction_request']
+        );
+    }
 
-  /**
-   * @cover CaptureDataBuilder::build
-   * @expectedException \Magento\Framework\Exception\LocalizedException
-   */
-  public function testBuildWithoutTransactionId()
-  {
-    $this->paymentMock->expects($this->once())
-      ->method('getCcTransId')
-      ->willReturn('');
+    /**
+     * @cover CaptureDataBuilder::build
+     * @expectedException \Magento\Framework\Exception\LocalizedException
+     */
+    public function testBuildWithoutTransactionId()
+    {
+        $this->paymentMock->expects($this->once())
+            ->method('getCcTransId')
+            ->willReturn('');
 
-    $subject = [
-      'payment' => $this->paymentDataObjectMock,
-      'amount' => '1.00',
-    ];
+        $subject = [
+            'payment' => $this->paymentDataObjectMock,
+            'amount' => '1.00',
+        ];
 
-    $this->captureDataBuilder->build($subject);
-  }
+        $this->captureDataBuilder->build($subject);
+    }
 }

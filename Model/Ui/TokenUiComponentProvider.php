@@ -24,47 +24,50 @@ use Magento\Framework\UrlInterface;
 
 class TokenUiComponentProvider implements TokenUiComponentProviderInterface
 {
-  /**
-   * @var TokenUiComponentInterfaceFactory
-   */
-  private $componentFactory;
+    /**
+     * @var TokenUiComponentInterfaceFactory
+     */
+    private $componentFactory;
 
-  /**
-   * @var \Magento\Framework\UrlInterface
-   */
-  private $urlBuilder;
+    /**
+     * @var \Magento\Framework\UrlInterface
+     */
+    private $urlBuilder;
 
-  /**
-   * @param TokenUiComponentInterfaceFactory $componentFactory
-   * @param UrlInterface $urlBuilder
-   */
-  public function __construct(
-    TokenUiComponentInterfaceFactory $componentFactory,
-    UrlInterface $urlBuilder
-  ) {
-    $this->componentFactory = $componentFactory;
-    $this->urlBuilder = $urlBuilder;
-  }
+    /**
+     * @param TokenUiComponentInterfaceFactory $componentFactory
+     * @param UrlInterface $urlBuilder
+     */
+    public function __construct(
+        TokenUiComponentInterfaceFactory $componentFactory,
+        UrlInterface $urlBuilder
+    ) {
+        $this->componentFactory = $componentFactory;
+        $this->urlBuilder = $urlBuilder;
+    }
 
-  /**
-   * Get UI component for token
-   * @param PaymentTokenInterface $paymentToken
-   * @return TokenUiComponentInterface
-   */
-  public function getComponentForToken(PaymentTokenInterface $paymentToken)
-  {
-    $jsonDetails = json_decode($paymentToken->getTokenDetails() ?: '{}', true);
-    $component = $this->componentFactory->create(
-      [
-        'config' => [
-          'code' => ConfigProvider::CC_VAULT_CODE,
-          TokenUiComponentProviderInterface::COMPONENT_DETAILS => $jsonDetails,
-          TokenUiComponentProviderInterface::COMPONENT_PUBLIC_HASH => $paymentToken->getPublicHash()
-        ],
-        'name' => 'Pmclain_AuthorizenetCim/js/view/payment/method-renderer/vault'
-      ]
-    );
+    /**
+     * Get UI component for token
+     * @param PaymentTokenInterface $paymentToken
+     * @return TokenUiComponentInterface
+     */
+    public function getComponentForToken(PaymentTokenInterface $paymentToken)
+    {
+        $jsonDetails = json_decode(
+            $paymentToken->getTokenDetails() ?: '{}',
+            true
+        );
+        $component = $this->componentFactory->create(
+            [
+                'config' => [
+                    'code' => ConfigProvider::CC_VAULT_CODE,
+                    TokenUiComponentProviderInterface::COMPONENT_DETAILS => $jsonDetails,
+                    TokenUiComponentProviderInterface::COMPONENT_PUBLIC_HASH => $paymentToken->getPublicHash()
+                ],
+                'name' => 'Pmclain_AuthorizenetCim/js/view/payment/method-renderer/vault'
+            ]
+        );
 
-    return $component;
-  }
+        return $component;
+    }
 }

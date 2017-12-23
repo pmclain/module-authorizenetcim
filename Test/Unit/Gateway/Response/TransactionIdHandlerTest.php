@@ -27,88 +27,91 @@ use net\authorize\api\contract\v1\TransactionResponseType;
 
 class TransactionIdHandlerTest extends \PHPUnit\Framework\TestCase
 {
-  /** @var TransactionIdHandler */
-  private $transactionIdHandler;
+    /** @var TransactionIdHandler */
+    private $transactionIdHandler;
 
-  /** @var SubjectReader */
-  private $subjectReader;
+    /** @var SubjectReader */
+    private $subjectReader;
 
-  /** @var PaymentDataObjectInterface|MockObject */
-  private $paymentDataObjectMock;
+    /** @var PaymentDataObjectInterface|MockObject */
+    private $paymentDataObjectMock;
 
-  /** @var Payment|MockObject */
-  private $paymentMock;
+    /** @var Payment|MockObject */
+    private $paymentMock;
 
-  /** @var CreateTransactionResponse|MockObject */
-  private $createTransactionResponseMock;
+    /** @var CreateTransactionResponse|MockObject */
+    private $createTransactionResponseMock;
 
-  /** @var TransactionResponseType|MockObject */
-  private $transactionResponseMock;
+    /** @var TransactionResponseType|MockObject */
+    private $transactionResponseMock;
 
-  protected function setUp()
-  {
-    $objectManager = new ObjectManager($this);
+    protected function setUp()
+    {
+        $objectManager = new ObjectManager($this);
 
-    $this->subjectReader = $objectManager->getObject(SubjectReader::class);
+        $this->subjectReader = $objectManager->getObject(SubjectReader::class);
 
-    $this->paymentMock = $this->getMockBuilder(Payment::class)
-      ->disableOriginalConstructor()
-      ->setMethods([
-        'getCreditmemo','setShouldCloseParentTransaction',
-        'setIsTransactionClosed','setTransactionId'
-      ])->getMock();
+        $this->paymentMock = $this->getMockBuilder(Payment::class)
+            ->disableOriginalConstructor()
+            ->setMethods([
+                'getCreditmemo',
+                'setShouldCloseParentTransaction',
+                'setIsTransactionClosed',
+                'setTransactionId'
+            ])->getMock();
 
-    $this->paymentDataObjectMock = $this->getMockBuilder(PaymentDataObjectInterface::class)
-      ->setMethods(['getPayment'])
-      ->getMockForAbstractClass();
+        $this->paymentDataObjectMock = $this->getMockBuilder(PaymentDataObjectInterface::class)
+            ->setMethods(['getPayment'])
+            ->getMockForAbstractClass();
 
-    $this->createTransactionResponseMock = $this->getMockBuilder(CreateTransactionResponse::class)
-      ->disableOriginalConstructor()
-      ->setMethods(['getTransactionResponse'])
-      ->getMock();
+        $this->createTransactionResponseMock = $this->getMockBuilder(CreateTransactionResponse::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getTransactionResponse'])
+            ->getMock();
 
-    $this->transactionResponseMock = $this->getMockBuilder(TransactionResponseType::class)
-      ->disableOriginalConstructor()
-      ->getMock();
+        $this->transactionResponseMock = $this->getMockBuilder(TransactionResponseType::class)
+            ->disableOriginalConstructor()
+            ->getMock();
 
-    $this->paymentDataObjectMock->expects($this->any())
-      ->method('getPayment')
-      ->willReturn($this->paymentMock);
+        $this->paymentDataObjectMock->expects($this->any())
+            ->method('getPayment')
+            ->willReturn($this->paymentMock);
 
-    $this->paymentMock->expects($this->once())
-      ->method('setIsTransactionClosed')
-      ->with(false);
+        $this->paymentMock->expects($this->once())
+            ->method('setIsTransactionClosed')
+            ->with(false);
 
-    $this->paymentMock->expects($this->once())
-      ->method('setShouldCloseParentTransaction')
-      ->with(false);
+        $this->paymentMock->expects($this->once())
+            ->method('setShouldCloseParentTransaction')
+            ->with(false);
 
-    $transId = '123456789';
+        $transId = '123456789';
 
-    $this->paymentMock->expects($this->once())
-      ->method('setTransactionId')
-      ->with($transId);
+        $this->paymentMock->expects($this->once())
+            ->method('setTransactionId')
+            ->with($transId);
 
-    $this->transactionResponseMock->expects($this->once())
-      ->method('getTransId')
-      ->willReturn($transId);
+        $this->transactionResponseMock->expects($this->once())
+            ->method('getTransId')
+            ->willReturn($transId);
 
-    $this->createTransactionResponseMock->expects($this->once())
-      ->method('getTransactionResponse')
-      ->willReturn($this->transactionResponseMock);
+        $this->createTransactionResponseMock->expects($this->once())
+            ->method('getTransactionResponse')
+            ->willReturn($this->transactionResponseMock);
 
-    $this->transactionIdHandler = $objectManager->getObject(TransactionIdHandler::class,
-      [
-        '_subjectReader' => $this->subjectReader
-      ]
-    );
-  }
+        $this->transactionIdHandler = $objectManager->getObject(
+            TransactionIdHandler::class,
+            [
+                '_subjectReader' => $this->subjectReader
+            ]
+        );
+    }
 
-  public function testHandle()
-  {
-    $subject = ['payment' => $this->paymentDataObjectMock];
-    $response = ['object' => $this->createTransactionResponseMock];
+    public function testHandle()
+    {
+        $subject = ['payment' => $this->paymentDataObjectMock];
+        $response = ['object' => $this->createTransactionResponseMock];
 
-    $this->transactionIdHandler->handle($subject, $response);
-  }
+        $this->transactionIdHandler->handle($subject, $response);
+    }
 }

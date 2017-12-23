@@ -18,8 +18,8 @@ namespace Pmclain\AuthorizenetCim\Gateway\Http\Client;
 
 class TransactionRefund extends AbstractTransaction
 {
-  protected function process(array $data)
-  {
-    return $this->_adapter->refund($data['transaction_request']);
-  }
+    protected function process(array $data)
+    {
+        return $this->_adapter->refund($data['transaction_request']);
+    }
 }

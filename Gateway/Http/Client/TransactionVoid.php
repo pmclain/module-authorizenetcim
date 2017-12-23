@@ -18,8 +18,8 @@ namespace Pmclain\AuthorizenetCim\Gateway\Http\Client;
 
 class TransactionVoid extends AbstractTransaction
 {
-  protected function process(array $data)
-  {
-    return $this->_adapter->void($data['transaction_request']);
-  }
+    protected function process(array $data)
+    {
+        return $this->_adapter->void($data['transaction_request']);
+    }
 }

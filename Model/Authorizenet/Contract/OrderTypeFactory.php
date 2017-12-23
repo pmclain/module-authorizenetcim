@@ -21,12 +21,12 @@ use Pmclain\AuthorizenetCim\Model\Authorizenet\AbstractFactory;
 
 class OrderTypeFactory extends AbstractFactory
 {
-  /**
-   * @param $sourceData
-   * @return OrderType
-   */
-  public function create($sourceData = null)
-  {
-    return $this->_objectManager->create(OrderType::class);
-  }
+    /**
+     * @param $sourceData
+     * @return OrderType
+     */
+    public function create($sourceData = null)
+    {
+        return $this->_objectManager->create(OrderType::class);
+    }
 }

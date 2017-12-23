@@ -28,103 +28,112 @@ use net\authorize\api\contract\v1\CustomerAddressType;
 
 class AddressDataBuilderTest extends \PHPUnit\Framework\TestCase
 {
-  /** @var AddressDataBuilder */
-  private $addressDataBuilder;
+    /** @var AddressDataBuilder */
+    private $addressDataBuilder;
 
-  /** @var SubjectReader */
-  private $subjectReader;
+    /** @var SubjectReader */
+    private $subjectReader;
 
-  /** @var CustomerAddressTypeFactory|MockObject */
-  private $customerAddressFactoryMock;
+    /** @var CustomerAddressTypeFactory|MockObject */
+    private $customerAddressFactoryMock;
 
-  /** @var PaymentDataObjectInterface|MockObject */
-  private $paymentDataObjectMock;
+    /** @var PaymentDataObjectInterface|MockObject */
+    private $paymentDataObjectMock;
 
-  /** @var OrderAdapterInterface|MockObject */
-  private $orderMock;
+    /** @var OrderAdapterInterface|MockObject */
+    private $orderMock;
 
-  /** @var AddressAdapterInterface|MockObject */
-  private $addressMock;
+    /** @var AddressAdapterInterface|MockObject */
+    private $addressMock;
 
-  /** @var CustomerAddressType */
-  private $customerAddress;
+    /** @var CustomerAddressType */
+    private $customerAddress;
 
-  protected function setUp()
-  {
-    $objectManager = new ObjectManager($this);
+    protected function setUp()
+    {
+        $objectManager = new ObjectManager($this);
 
-    $this->subjectReader = $objectManager->getObject(SubjectReader::class);
+        $this->subjectReader = $objectManager->getObject(SubjectReader::class);
 
-    $this->customerAddressFactoryMock = $this->getMockBuilder(CustomerAddressTypeFactory::class)
-      ->disableOriginalConstructor()
-      ->setMethods(['create'])
-      ->getMock();
+        $this->customerAddressFactoryMock = $this->getMockBuilder(CustomerAddressTypeFactory::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
 
-    $this->customerAddress = $objectManager->getObject(CustomerAddressType::class);
+        $this->customerAddress = $objectManager->getObject(CustomerAddressType::class);
 
-    $this->paymentDataObjectMock = $this->getMockBuilder(PaymentDataObjectInterface::class)
-      ->setMethods(['getOrder'])
-      ->getMockForAbstractClass();
+        $this->paymentDataObjectMock = $this->getMockBuilder(PaymentDataObjectInterface::class)
+            ->setMethods(['getOrder'])
+            ->getMockForAbstractClass();
 
-    $this->orderMock = $this->getMockBuilder(OrderAdapterInterface::class)
-      ->setMethods(['getBillingAddress'])
-      ->getMockForAbstractClass();
+        $this->orderMock = $this->getMockBuilder(OrderAdapterInterface::class)
+            ->setMethods(['getBillingAddress'])
+            ->getMockForAbstractClass();
 
-    $this->addressMock = $this->getMockBuilder(AddressAdapterInterface::class)
-      ->setMethods([
-        'getFirstname','getLastname','getCompany','getStreetLine1','getCity',
-        'getRegionCode','getPostcode','getCountryId','getTelephone','getEmail'
-      ])->getMockForAbstractClass();
+        $this->addressMock = $this->getMockBuilder(AddressAdapterInterface::class)
+            ->setMethods([
+                'getFirstname',
+                'getLastname',
+                'getCompany',
+                'getStreetLine1',
+                'getCity',
+                'getRegionCode',
+                'getPostcode',
+                'getCountryId',
+                'getTelephone',
+                'getEmail'
+            ])->getMockForAbstractClass();
 
-    $this->addressDataBuilder = $objectManager->getObject(AddressDataBuilder::class,
-      [
-        '_subjectReader' => $this->subjectReader,
-        '_customerAddressFactory' => $this->customerAddressFactoryMock,
-      ]
-    );
-  }
-
-  public function testBuild()
-  {
-    $this->paymentDataObjectMock->expects($this->once())
-      ->method('getOrder')
-      ->willReturn($this->orderMock);
-
-    $this->orderMock->expects($this->once())
-      ->method('getBillingAddress')
-      ->willReturn($this->addressMock);
-
-    $this->customerAddressFactoryMock->expects($this->once())
-      ->method('create')
-      ->willReturn($this->customerAddress);
-
-    $addressData = [
-      'John' => ['Firstname', 'FirstName'],
-      'Doe' => ['Lastname', 'LastName'],
-      'Acme Co' => ['Company', 'Company'],
-      '123 Abc St' => ['StreetLine1', 'Address'],
-      'Lawton' => ['City', 'City'],
-      'MI' => ['RegionCode', 'State'],
-      '49065' => ['Postcode', 'Zip'],
-      'US' => ['CountryId', 'Country'],
-      '(555) 229-3326' => ['Telephone', 'PhoneNumber'],
-      'roni_cost@example.com' => ['Email', 'Email']
-    ];
-
-    foreach ($addressData as $value => $fieldNames) {
-      $this->addressMock->expects($this->once())
-        ->method('get' . $fieldNames[0])
-        ->willReturn($value);
+        $this->addressDataBuilder = $objectManager->getObject(
+            AddressDataBuilder::class,
+            [
+                '_subjectReader' => $this->subjectReader,
+                '_customerAddressFactory' => $this->customerAddressFactoryMock,
+            ]
+        );
     }
 
-    $result = $this->addressDataBuilder->build(['payment' => $this->paymentDataObjectMock]);
-    $customerAddress = $result['bill_to_address'];
+    public function testBuild()
+    {
+        $this->paymentDataObjectMock->expects($this->once())
+            ->method('getOrder')
+            ->willReturn($this->orderMock);
 
-    foreach ($addressData as $value => $fieldNames) {
-      $this->assertEquals(
-        $value,
-        $customerAddress->{'get' . $fieldNames[1]}()
-      );
+        $this->orderMock->expects($this->once())
+            ->method('getBillingAddress')
+            ->willReturn($this->addressMock);
+
+        $this->customerAddressFactoryMock->expects($this->once())
+            ->method('create')
+            ->willReturn($this->customerAddress);
+
+        $addressData = [
+            'John' => ['Firstname', 'FirstName'],
+            'Doe' => ['Lastname', 'LastName'],
+            'Acme Co' => ['Company', 'Company'],
+            '123 Abc St' => ['StreetLine1', 'Address'],
+            'Lawton' => ['City', 'City'],
+            'MI' => ['RegionCode', 'State'],
+            '49065' => ['Postcode', 'Zip'],
+            'US' => ['CountryId', 'Country'],
+            '(555) 229-3326' => ['Telephone', 'PhoneNumber'],
+            'roni_cost@example.com' => ['Email', 'Email']
+        ];
+
+        foreach ($addressData as $value => $fieldNames) {
+            $this->addressMock->expects($this->once())
+                ->method('get' . $fieldNames[0])
+                ->willReturn($value);
+        }
+
+        $result = $this->addressDataBuilder->build(['payment' => $this->paymentDataObjectMock]);
+        $customerAddress = $result['bill_to_address'];
+
+        foreach ($addressData as $value => $fieldNames) {
+            $this->assertEquals(
+                $value,
+                $customerAddress->{'get' . $fieldNames[1]}()
+            );
+        }
     }
-  }
 }

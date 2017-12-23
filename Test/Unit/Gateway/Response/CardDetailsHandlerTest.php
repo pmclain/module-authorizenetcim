@@ -27,100 +27,101 @@ use net\authorize\api\contract\v1\TransactionResponseType;
 
 class CardDetailsHandlerTest extends \PHPUnit\Framework\TestCase
 {
-  /** @var CardDetailsHandler */
-  private $cardDetailsHandler;
+    /** @var CardDetailsHandler */
+    private $cardDetailsHandler;
 
-  /** @var SubjectReader */
-  private $subjectReader;
+    /** @var SubjectReader */
+    private $subjectReader;
 
-  /** @var PaymentDataObjectInterface|MockObject */
-  private $paymentDataObjectMock;
+    /** @var PaymentDataObjectInterface|MockObject */
+    private $paymentDataObjectMock;
 
-  /** @var CreateTransactionResponse|MockObject */
-  private $createTransactionResponseMock;
+    /** @var CreateTransactionResponse|MockObject */
+    private $createTransactionResponseMock;
 
-  /** @var TransactionResponseType|MockObject */
-  private $transactionResponseMock;
+    /** @var TransactionResponseType|MockObject */
+    private $transactionResponseMock;
 
-  /** @var Payment|MockObject */
-  private $paymentMock;
+    /** @var Payment|MockObject */
+    private $paymentMock;
 
-  protected function setUp()
-  {
-    $objectManager = new ObjectManager($this);
+    protected function setUp()
+    {
+        $objectManager = new ObjectManager($this);
 
-    $this->subjectReader = $objectManager->getObject(SubjectReader::class);
+        $this->subjectReader = $objectManager->getObject(SubjectReader::class);
 
-    $this->paymentDataObjectMock = $this->getMockBuilder(PaymentDataObjectInterface::class)
-      ->setMethods(['getPayment'])
-      ->getMockForAbstractClass();
+        $this->paymentDataObjectMock = $this->getMockBuilder(PaymentDataObjectInterface::class)
+            ->setMethods(['getPayment'])
+            ->getMockForAbstractClass();
 
-    $this->createTransactionResponseMock = $this->getMockBuilder(CreateTransactionResponse::class)
-      ->disableOriginalConstructor()
-      ->setMethods(['getTransactionResponse'])
-      ->getMock();
+        $this->createTransactionResponseMock = $this->getMockBuilder(CreateTransactionResponse::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getTransactionResponse'])
+            ->getMock();
 
-    $this->transactionResponseMock = $this->getMockBuilder(TransactionResponseType::class)
-      ->disableOriginalConstructor()
-      ->setMethods(['getAccountNumber','getAccountType'])
-      ->getMock();
+        $this->transactionResponseMock = $this->getMockBuilder(TransactionResponseType::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getAccountNumber', 'getAccountType'])
+            ->getMock();
 
-    $this->paymentMock = $this->getMockBuilder(Payment::class)
-      ->disableOriginalConstructor()
-      ->setMethods(['setCcLast4','setCcType'])
-      ->getMock();
+        $this->paymentMock = $this->getMockBuilder(Payment::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['setCcLast4', 'setCcType'])
+            ->getMock();
 
-    $this->cardDetailsHandler = $objectManager->getObject(CardDetailsHandler::class,
-      [
-        '_subjectReader' => $this->subjectReader
-      ]
-    );
-  }
+        $this->cardDetailsHandler = $objectManager->getObject(
+            CardDetailsHandler::class,
+            [
+                '_subjectReader' => $this->subjectReader
+            ]
+        );
+    }
 
-  public function testHandle()
-  {
-    $accountNumber = 'XXXXXX1111';
-    $accountType = 'VI';
+    public function testHandle()
+    {
+        $accountNumber = 'XXXXXX1111';
+        $accountType = 'VI';
 
-    $this->createTransactionResponseMock->expects($this->once())
-      ->method('getTransactionResponse')
-      ->willReturn($this->transactionResponseMock);
+        $this->createTransactionResponseMock->expects($this->once())
+            ->method('getTransactionResponse')
+            ->willReturn($this->transactionResponseMock);
 
-    $this->paymentDataObjectMock->expects($this->once())
-      ->method('getPayment')
-      ->willReturn($this->paymentMock);
+        $this->paymentDataObjectMock->expects($this->once())
+            ->method('getPayment')
+            ->willReturn($this->paymentMock);
 
-    $this->transactionResponseMock->expects($this->once())
-      ->method('getAccountNumber')
-      ->willReturn($accountNumber);
+        $this->transactionResponseMock->expects($this->once())
+            ->method('getAccountNumber')
+            ->willReturn($accountNumber);
 
-    $this->transactionResponseMock->expects($this->once())
-      ->method('getAccountType')
-      ->willReturn($accountType);
+        $this->transactionResponseMock->expects($this->once())
+            ->method('getAccountType')
+            ->willReturn($accountType);
 
-    $this->paymentMock->expects($this->once())
-      ->method('setCcLast4')
-      ->with('1111');
+        $this->paymentMock->expects($this->once())
+            ->method('setCcLast4')
+            ->with('1111');
 
-    $this->paymentMock->expects($this->once())
-      ->method('setCcType')
-      ->with($accountType);
+        $this->paymentMock->expects($this->once())
+            ->method('setCcType')
+            ->with($accountType);
 
-    $subject = ['payment' => $this->paymentDataObjectMock];
-    $response = ['object' => $this->createTransactionResponseMock];
+        $subject = ['payment' => $this->paymentDataObjectMock];
+        $response = ['object' => $this->createTransactionResponseMock];
 
-    $this->cardDetailsHandler->handle($subject, $response);
-  }
+        $this->cardDetailsHandler->handle($subject, $response);
+    }
 
-  /**
-   * @cover CardDetailsHandler::handle
-   * @expectedException \InvalidArgumentException
-   */
-  public function testHandleWithoutTransactionObject()
-  {
-    $subject = ['payment' => $this->paymentDataObjectMock];
-    $response = ['object' => 'string'];
+    /**
+     * @cover CardDetailsHandler::handle
+     * @expectedException \InvalidArgumentException
+     */
+    public function testHandleWithoutTransactionObject()
+    {
+        $subject = ['payment' => $this->paymentDataObjectMock];
+        $response = ['object' => 'string'];
 
-    $this->cardDetailsHandler->handle($subject, $response);
-  }
+        $this->cardDetailsHandler->handle($subject, $response);
+    }
 }

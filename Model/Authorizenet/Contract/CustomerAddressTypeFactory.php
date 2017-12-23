@@ -21,12 +21,12 @@ use Pmclain\AuthorizenetCim\Model\Authorizenet\AbstractFactory;
 
 class CustomerAddressTypeFactory extends AbstractFactory
 {
-  /**
-   * @param $sourceData
-   * @return CustomerAddressType
-   */
-  public function create($sourceData = null)
-  {
-    return $this->_objectManager->create(CustomerAddressType::class);
-  }
+    /**
+     * @param $sourceData
+     * @return CustomerAddressType
+     */
+    public function create($sourceData = null)
+    {
+        return $this->_objectManager->create(CustomerAddressType::class);
+    }
 }

@@ -25,41 +25,41 @@ use Pmclain\AuthorizenetCim\Model\Ui\ConfigProvider;
 
 class Form extends Cc
 {
-  /** @var Config */
-  protected $_config;
+    /** @var Config */
+    protected $_config;
 
-  /** @var Helper */
-  protected $_helper;
+    /** @var Helper */
+    protected $_helper;
 
-  public function __construct(
-    Context $context,
-    PaymentConfig $paymentConfig,
-    Config $config,
-    Helper $helper,
-    array $data = []
-  ) {
-    parent::__construct($context, $paymentConfig, $data);
-    $this->_config = $config;
-    $this->_helper = $helper;
-  }
+    public function __construct(
+        Context $context,
+        PaymentConfig $paymentConfig,
+        Config $config,
+        Helper $helper,
+        array $data = []
+    ) {
+        parent::__construct($context, $paymentConfig, $data);
+        $this->_config = $config;
+        $this->_helper = $helper;
+    }
 
-  /** @return bool */
-  public function useCcv()
-  {
-    return $this->_config->isCcvEnabled();
-  }
+    /** @return bool */
+    public function useCcv()
+    {
+        return $this->_config->isCcvEnabled();
+    }
 
-  /** @return bool */
-  public function isVaultEnabled()
-  {
-    $storeId = $this->_storeManager->getStore()->getId();
-    $vaultPayment = $this->getVaultPayment();
-    return $vaultPayment->isActive($storeId);
-  }
+    /** @return bool */
+    public function isVaultEnabled()
+    {
+        $storeId = $this->_storeManager->getStore()->getId();
+        $vaultPayment = $this->getVaultPayment();
+        return $vaultPayment->isActive($storeId);
+    }
 
-  /** @return \Magento\Vault\Model\VaultPaymentInterface */
-  private function getVaultPayment()
-  {
-    return $this->_helper->getMethodInstance(ConfigProvider::CC_VAULT_CODE);
-  }
+    /** @return \Magento\Vault\Model\VaultPaymentInterface */
+    private function getVaultPayment()
+    {
+        return $this->_helper->getMethodInstance(ConfigProvider::CC_VAULT_CODE);
+    }
 }

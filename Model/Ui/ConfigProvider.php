@@ -22,58 +22,61 @@ use Magento\Store\Model\ScopeInterface;
 
 class ConfigProvider implements ConfigProviderInterface
 {
-  const CODE = 'pmclain_authorizenetcim';
-  const CC_VAULT_CODE = 'pmclain_authorizenetcim_vault';
+    const CODE = 'pmclain_authorizenetcim';
+    const CC_VAULT_CODE = 'pmclain_authorizenetcim_vault';
 
-  /** @var ScopeConfigInterface */
-  protected $_config;
+    /** @var ScopeConfigInterface */
+    protected $_config;
 
-  /**
-   * ConfigProvider constructor.
-   * @param ScopeConfigInterface $config
-   */
-  public function __construct(ScopeConfigInterface $config)
-  {
-    $this->_config = $config;
-  }
+    /**
+     * ConfigProvider constructor.
+     * @param ScopeConfigInterface $config
+     */
+    public function __construct(ScopeConfigInterface $config)
+    {
+        $this->_config = $config;
+    }
 
-  public function getConfig()
-  {
-    return [
-      'payment' => [
-        self::CODE => [
-          'clientKey' => $this->_getClientKey(),
-          'apiLoginId' => $this->_getApiLoginId(),
-          'useccv' => $this->_getUseCcv(),
-          'vaultCode' => self::CC_VAULT_CODE,
-          'test' => $this->_getIsTest(),
-        ]
-      ]
-    ];
-  }
+    public function getConfig()
+    {
+        return [
+            'payment' => [
+                self::CODE => [
+                    'clientKey' => $this->_getClientKey(),
+                    'apiLoginId' => $this->_getApiLoginId(),
+                    'useccv' => $this->_getUseCcv(),
+                    'vaultCode' => self::CC_VAULT_CODE,
+                    'test' => $this->_getIsTest(),
+                ]
+            ]
+        ];
+    }
 
-  protected function _getClientKey()
-  {
-    return $this->_getConfig('client_key');
-  }
+    protected function _getClientKey()
+    {
+        return $this->_getConfig('client_key');
+    }
 
-  protected function _getApiLoginId()
-  {
-    return $this->_getConfig('login');
-  }
+    protected function _getApiLoginId()
+    {
+        return $this->_getConfig('login');
+    }
 
-  protected function _getIsTest()
-  {
-    return $this->_getConfig('test');
-  }
+    protected function _getIsTest()
+    {
+        return $this->_getConfig('test');
+    }
 
-  protected function _getUseCcv()
-  {
-    return $this->_getConfig('useccv');
-  }
+    protected function _getUseCcv()
+    {
+        return $this->_getConfig('useccv');
+    }
 
-  protected function _getConfig($value)
-  {
-    return $this->_config->getValue('payment/pmclain_authorizenetcim/' . $value, ScopeInterface::SCOPE_STORE);
-  }
+    protected function _getConfig($value)
+    {
+        return $this->_config->getValue(
+            'payment/pmclain_authorizenetcim/' . $value,
+            ScopeInterface::SCOPE_STORE
+        );
+    }
 }

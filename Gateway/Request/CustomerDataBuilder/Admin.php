@@ -24,47 +24,51 @@ use Magento\Backend\Model\Session\Quote;
 
 class Admin extends CustomerDataBuilder
 {
-  /** @var Quote */
-  protected $_adminSession;
+    /** @var Quote */
+    protected $_adminSession;
 
-  /**
-   * Admin constructor.
-   * @param SubjectReader $subjectReader
-   * @param Session $customerSession
-   * @param CustomerRepositoryInterface $customerRepository
-   * @param Quote $session
-   */
-  public function __construct(
-    SubjectReader $subjectReader,
-    Session $customerSession,
-    CustomerRepositoryInterface $customerRepository,
-    Quote $session
-  ) {
-    parent::__construct($subjectReader, $customerSession, $customerRepository);
-    $this->_adminSession = $session;
-  }
-
-  public function build(array $subject)
-  {
-    if ($this->_adminSession->getCustomerId()) {
-      return [
-        'customer_id' => $this->_adminSession->getCustomerId(),
-        'profile_id' => $this->_getCimProfileId()
-      ];
+    /**
+     * Admin constructor.
+     * @param SubjectReader $subjectReader
+     * @param Session $customerSession
+     * @param CustomerRepositoryInterface $customerRepository
+     * @param Quote $session
+     */
+    public function __construct(
+        SubjectReader $subjectReader,
+        Session $customerSession,
+        CustomerRepositoryInterface $customerRepository,
+        Quote $session
+    ) {
+        parent::__construct(
+            $subjectReader,
+            $customerSession,
+            $customerRepository
+        );
+        $this->_adminSession = $session;
     }
 
-    return [
-      'customer_id' => null,
-      'profile_id' => null
-    ];
-  }
+    public function build(array $subject)
+    {
+        if ($this->_adminSession->getCustomerId()) {
+            return [
+                'customer_id' => $this->_adminSession->getCustomerId(),
+                'profile_id' => $this->_getCimProfileId()
+            ];
+        }
 
-  /** @return string|null */
-  protected function _getCimProfileId()
-  {
-    $customer = $this->_customerRepository->getById($this->_adminSession->getCustomerId());
-    $cimProfileId = $customer->getCustomAttribute('authorizenet_cim_profile_id');
+        return [
+            'customer_id' => null,
+            'profile_id' => null
+        ];
+    }
 
-    return $cimProfileId ? $cimProfileId->getValue() : null;
-  }
+    /** @return string|null */
+    protected function _getCimProfileId()
+    {
+        $customer = $this->_customerRepository->getById($this->_adminSession->getCustomerId());
+        $cimProfileId = $customer->getCustomAttribute('authorizenet_cim_profile_id');
+
+        return $cimProfileId ? $cimProfileId->getValue() : null;
+    }
 }

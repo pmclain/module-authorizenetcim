@@ -20,19 +20,19 @@ use Pmclain\AuthorizenetCim\Gateway\Validator\GeneralResponseValidator;
 
 class Authorize extends GeneralResponseValidator
 {
-  protected function getResponseValidators() {
-    return array_merge(
-      parent::getResponseValidators(),
-      [
-        function ($response) {
-          $transactionResponse = $response->getTransactionResponse();
-          return [
-            count($transactionResponse->getErrors()) === 0,
-            [__($transactionResponse->getMessages()[0]->getDescription())]
-          ];
-        }
-      ]
-    );
-  }
+    protected function getResponseValidators()
+    {
+        return array_merge(
+            parent::getResponseValidators(),
+            [
+                function ($response) {
+                    $transactionResponse = $response->getTransactionResponse();
+                    return [
+                        count($transactionResponse->getErrors()) === 0,
+                        [__($transactionResponse->getMessages()[0]->getDescription())]
+                    ];
+                }
+            ]
+        );
+    }
 }
-

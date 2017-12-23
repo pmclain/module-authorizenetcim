@@ -20,31 +20,33 @@ use Magento\Payment\Gateway\Helper;
 
 class SubjectReader
 {
-  public function readResponseObject(array $subject)
-  {
-    $response = Helper\SubjectReader::readResponse($subject);
+    public function readResponseObject(array $subject)
+    {
+        $response = Helper\SubjectReader::readResponse($subject);
 
-    if (!is_object($response['object'])) {
-      throw new \InvalidArgumentException('Response object does not exist.');
+        if (!is_object($response['object'])) {
+            throw new \InvalidArgumentException('Response object does not exist.');
+        }
+
+        return $response['object'];
     }
 
-    return $response['object'];
-  }
-
-  public function readPayment(array $subject)
-  {
-    return Helper\SubjectReader::readPayment($subject);
-  }
-
-  public function readTransaction(array $subject) {
-    if(!is_object($subject['object'])) {
-      throw new \InvalidArgumentException('Response object does not exist');
+    public function readPayment(array $subject)
+    {
+        return Helper\SubjectReader::readPayment($subject);
     }
 
-    return $subject['object'];
-  }
+    public function readTransaction(array $subject)
+    {
+        if (!is_object($subject['object'])) {
+            throw new \InvalidArgumentException('Response object does not exist');
+        }
 
-  public function readAmount(array $subject) {
-    return Helper\SubjectReader::readAmount($subject);
-  }
+        return $subject['object'];
+    }
+
+    public function readAmount(array $subject)
+    {
+        return Helper\SubjectReader::readAmount($subject);
+    }
 }
