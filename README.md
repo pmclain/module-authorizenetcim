@@ -39,4 +39,4 @@ mode, but it will error if you attempt to use it over HTTP. You do NOT need a
 valid SSL certificate for testing. 
 
 ## License
-GNU GENERAL PUBLIC LICENSE Version 3
+Open Software License v3.0
