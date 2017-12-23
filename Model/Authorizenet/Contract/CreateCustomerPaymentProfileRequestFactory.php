@@ -27,6 +27,6 @@ class CreateCustomerPaymentProfileRequestFactory extends AbstractFactory
      */
     public function create($sourceData = null)
     {
-        return $this->_objectManager->create(CreateCustomerPaymentProfileRequest::class);
+        return new CreateCustomerPaymentProfileRequest();
     }
 }

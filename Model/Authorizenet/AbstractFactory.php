@@ -23,8 +23,9 @@ abstract class AbstractFactory
     /** @var ObjectManagerInterface */
     protected $_objectManager;
 
-    public function __construct(ObjectManagerInterface $objectManager)
-    {
+    public function __construct(
+        ObjectManagerInterface $objectManager
+    ) {
         $this->_objectManager = $objectManager;
     }
 

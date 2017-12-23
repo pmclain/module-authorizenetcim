@@ -27,6 +27,6 @@ class CustomerProfilePaymentTypeFactory extends AbstractFactory
      */
     public function create($sourceData = null)
     {
-        return $this->_objectManager->create(CustomerProfilePaymentType::class);
+        return new CustomerProfilePaymentType();
     }
 }
