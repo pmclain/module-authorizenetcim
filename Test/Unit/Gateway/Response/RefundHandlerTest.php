@@ -29,122 +29,127 @@ use net\authorize\api\contract\v1\TransactionResponseType;
 
 class RefundHandlerTest extends \PHPUnit\Framework\TestCase
 {
-  /** @var RefundHandler */
-  private $refundHandler;
+    /** @var RefundHandler */
+    private $refundHandler;
 
-  /** @var SubjectReader */
-  private $subjectReader;
+    /** @var SubjectReader */
+    private $subjectReader;
 
-  /** @var Creditmemo|MockObject */
-  private $creditmemoMock;
+    /** @var Creditmemo|MockObject */
+    private $creditmemoMock;
 
-  /** @var Invoice|MockObject */
-  private $invoiceMock;
+    /** @var Invoice|MockObject */
+    private $invoiceMock;
 
-  /** @var PaymentDataObjectInterface|MockObject */
-  private $paymentDataObjectMock;
+    /** @var PaymentDataObjectInterface|MockObject */
+    private $paymentDataObjectMock;
 
-  /** @var Payment|MockObject */
-  private $paymentMock;
+    /** @var Payment|MockObject */
+    private $paymentMock;
 
-  /** @var CreateTransactionResponse|MockObject */
-  private $createTransactionResponseMock;
+    /** @var CreateTransactionResponse|MockObject */
+    private $createTransactionResponseMock;
 
-  /** @var TransactionResponseType|MockObject */
-  private $transactionResponseMock;
+    /** @var TransactionResponseType|MockObject */
+    private $transactionResponseMock;
 
-  protected function setUp()
-  {
-    $objectManager = new ObjectManager($this);
+    protected function setUp()
+    {
+        $objectManager = new ObjectManager($this);
 
-    $this->subjectReader = $objectManager->getObject(SubjectReader::class);
+        $this->subjectReader = $objectManager->getObject(SubjectReader::class);
 
-    $this->creditmemoMock = $this->getMockBuilder(Creditmemo::class)
-      ->disableOriginalConstructor()
-      ->setMethods(['getInvoice'])
-      ->getMock();
+        $this->creditmemoMock = $this->getMockBuilder(Creditmemo::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getInvoice'])
+            ->getMock();
 
-    $this->paymentMock = $this->getMockBuilder(Payment::class)
-      ->disableOriginalConstructor()
-      ->setMethods(['getCreditmemo','setShouldCloseParentTransaction','setIsTransactionClosed'])
-      ->getMock();
+        $this->paymentMock = $this->getMockBuilder(Payment::class)
+            ->disableOriginalConstructor()
+            ->setMethods([
+                'getCreditmemo',
+                'setShouldCloseParentTransaction',
+                'setIsTransactionClosed'
+            ])
+            ->getMock();
 
-    $this->invoiceMock = $this->getMockBuilder(Invoice::class)
-      ->disableOriginalConstructor()
-      ->setMethods(['canRefund'])
-      ->getMock();
+        $this->invoiceMock = $this->getMockBuilder(Invoice::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['canRefund'])
+            ->getMock();
 
-    $this->paymentDataObjectMock = $this->getMockBuilder(PaymentDataObjectInterface::class)
-      ->setMethods(['getPayment'])
-      ->getMockForAbstractClass();
+        $this->paymentDataObjectMock = $this->getMockBuilder(PaymentDataObjectInterface::class)
+            ->setMethods(['getPayment'])
+            ->getMockForAbstractClass();
 
-    $this->createTransactionResponseMock = $this->getMockBuilder(CreateTransactionResponse::class)
-      ->disableOriginalConstructor()
-      ->setMethods(['getTransactionResponse'])
-      ->getMock();
+        $this->createTransactionResponseMock = $this->getMockBuilder(CreateTransactionResponse::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getTransactionResponse'])
+            ->getMock();
 
-    $this->transactionResponseMock = $this->getMockBuilder(TransactionResponseType::class)
-      ->disableOriginalConstructor()
-      ->getMock();
+        $this->transactionResponseMock = $this->getMockBuilder(TransactionResponseType::class)
+            ->disableOriginalConstructor()
+            ->getMock();
 
-    $this->paymentDataObjectMock->expects($this->any())
-      ->method('getPayment')
-      ->willReturn($this->paymentMock);
+        $this->paymentDataObjectMock->expects($this->any())
+            ->method('getPayment')
+            ->willReturn($this->paymentMock);
 
-    $this->paymentMock->expects($this->once())
-      ->method('setIsTransactionClosed')
-      ->with(true);
+        $this->paymentMock->expects($this->once())
+            ->method('setIsTransactionClosed')
+            ->with(true);
 
-    $this->createTransactionResponseMock->expects($this->once())
-      ->method('getTransactionResponse')
-      ->willReturn($this->transactionResponseMock);
+        $this->createTransactionResponseMock->expects($this->once())
+            ->method('getTransactionResponse')
+            ->willReturn($this->transactionResponseMock);
 
-    $this->paymentMock->expects($this->once())
-      ->method('getCreditmemo')
-      ->willReturn($this->creditmemoMock);
+        $this->paymentMock->expects($this->once())
+            ->method('getCreditmemo')
+            ->willReturn($this->creditmemoMock);
 
-    $this->creditmemoMock->expects($this->once())
-      ->method('getInvoice')
-      ->willReturn($this->invoiceMock);
+        $this->creditmemoMock->expects($this->once())
+            ->method('getInvoice')
+            ->willReturn($this->invoiceMock);
 
-    $this->refundHandler = $objectManager->getObject(RefundHandler::class,
-      [
-        '_subjectReader' => $this->subjectReader
-      ]
-    );
-  }
+        $this->refundHandler = $objectManager->getObject(
+            RefundHandler::class,
+            [
+                '_subjectReader' => $this->subjectReader
+            ]
+        );
+    }
 
-  /** @cover RefundHandler::handle */
-  public function testHandleShouldCloseParentTransactionTrue()
-  {
-    $this->invoiceMock->expects($this->once())
-      ->method('canRefund')
-      ->willReturn(false);
+    /** @cover RefundHandler::handle */
+    public function testHandleShouldCloseParentTransactionTrue()
+    {
+        $this->invoiceMock->expects($this->once())
+            ->method('canRefund')
+            ->willReturn(false);
 
-    $this->paymentMock->expects($this->once())
-      ->method('setShouldCloseParentTransaction')
-      ->with(true);
+        $this->paymentMock->expects($this->once())
+            ->method('setShouldCloseParentTransaction')
+            ->with(true);
 
-    $subject = ['payment' => $this->paymentDataObjectMock];
-    $response = ['object' => $this->createTransactionResponseMock];
+        $subject = ['payment' => $this->paymentDataObjectMock];
+        $response = ['object' => $this->createTransactionResponseMock];
 
-    $this->refundHandler->handle($subject, $response);
-  }
+        $this->refundHandler->handle($subject, $response);
+    }
 
-  /** @cover RefundHandler::handle */
-  public function testHandleShouldCloseParentTransactionFalse()
-  {
-    $this->invoiceMock->expects($this->once())
-      ->method('canRefund')
-      ->willReturn(true);
+    /** @cover RefundHandler::handle */
+    public function testHandleShouldCloseParentTransactionFalse()
+    {
+        $this->invoiceMock->expects($this->once())
+            ->method('canRefund')
+            ->willReturn(true);
 
-    $this->paymentMock->expects($this->once())
-      ->method('setShouldCloseParentTransaction')
-      ->with(false);
+        $this->paymentMock->expects($this->once())
+            ->method('setShouldCloseParentTransaction')
+            ->with(false);
 
-    $subject = ['payment' => $this->paymentDataObjectMock];
-    $response = ['object' => $this->createTransactionResponseMock];
+        $subject = ['payment' => $this->paymentDataObjectMock];
+        $response = ['object' => $this->createTransactionResponseMock];
 
-    $this->refundHandler->handle($subject, $response);
-  }
+        $this->refundHandler->handle($subject, $response);
+    }
 }

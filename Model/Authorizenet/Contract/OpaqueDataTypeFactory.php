@@ -21,12 +21,12 @@ use Pmclain\AuthorizenetCim\Model\Authorizenet\AbstractFactory;
 
 class OpaqueDataTypeFactory extends AbstractFactory
 {
-  /**
-   * @param $sourceData
-   * @return OpaqueDataType
-   */
-  public function create($sourceData = null)
-  {
-    return $this->_objectManager->create(OpaqueDataType::class);
-  }
+    /**
+     * @param $sourceData
+     * @return OpaqueDataType
+     */
+    public function create($sourceData = null)
+    {
+        return $this->_objectManager->create(OpaqueDataType::class);
+    }
 }

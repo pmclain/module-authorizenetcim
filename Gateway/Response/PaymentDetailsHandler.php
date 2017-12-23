@@ -21,34 +21,34 @@ use Pmclain\AuthorizenetCim\Gateway\Helper\SubjectReader;
 
 class PaymentDetailsHandler implements HandlerInterface
 {
-  /** @var SubjectReader */
-  protected $_subjectReader;
+    /** @var SubjectReader */
+    protected $_subjectReader;
 
-  public function __construct(
-    SubjectReader $subjectReader
-  ) {
-    $this->_subjectReader = $subjectReader;
-  }
-
-  public function handle(array $handlingSubject, array $response)
-  {
-    $paymentDataObject = $this->_subjectReader->readPayment($handlingSubject);
-    $transaction = $this->_subjectReader->readTransaction($response);
-    $transaction = $transaction->getTransactionResponse();
-    $payment = $paymentDataObject->getPayment();
-
-    $payment->setCcTransId($transaction->getTransId());
-    $payment->setLastTransId($transaction->getTransId());
-
-    $additionalInformation = [
-      'auth_code' => $transaction->getAuthCode(),
-      'avs_code' => $transaction->getAvsResultCode(),
-      'cavv_code' => $transaction->getCavvResultCode(),
-      'cvv_code' => $transaction->getCvvResultCode()
-    ];
-
-    foreach ($additionalInformation as $key => $value) {
-      $payment->setAdditionalInformation($key, $value);
+    public function __construct(
+        SubjectReader $subjectReader
+    ) {
+        $this->_subjectReader = $subjectReader;
     }
-  }
+
+    public function handle(array $handlingSubject, array $response)
+    {
+        $paymentDataObject = $this->_subjectReader->readPayment($handlingSubject);
+        $transaction = $this->_subjectReader->readTransaction($response);
+        $transaction = $transaction->getTransactionResponse();
+        $payment = $paymentDataObject->getPayment();
+
+        $payment->setCcTransId($transaction->getTransId());
+        $payment->setLastTransId($transaction->getTransId());
+
+        $additionalInformation = [
+            'auth_code' => $transaction->getAuthCode(),
+            'avs_code' => $transaction->getAvsResultCode(),
+            'cavv_code' => $transaction->getCavvResultCode(),
+            'cvv_code' => $transaction->getCvvResultCode()
+        ];
+
+        foreach ($additionalInformation as $key => $value) {
+            $payment->setAdditionalInformation($key, $value);
+        }
+    }
 }

@@ -21,23 +21,23 @@ use Pmclain\AuthorizenetCim\Gateway\Helper\SubjectReader;
 
 class TokenDataBuilder implements BuilderInterface
 {
-  /** @var SubjectReader */
-  protected $_subjectReader;
+    /** @var SubjectReader */
+    protected $_subjectReader;
 
-  public function __construct(
-   SubjectReader $subjectReader
-  ) {
-    $this->_subjectReader = $subjectReader;
-  }
+    public function __construct(
+        SubjectReader $subjectReader
+    ) {
+        $this->_subjectReader = $subjectReader;
+    }
 
-  public function build(array $subject)
-  {
-    $paymentDataObject = $this->_subjectReader->readPayment($subject);
-    $payment = $paymentDataObject->getPayment();
+    public function build(array $subject)
+    {
+        $paymentDataObject = $this->_subjectReader->readPayment($subject);
+        $payment = $paymentDataObject->getPayment();
 
-    $extensionAttributes = $payment->getExtensionAttributes();
-    $paymentToken = $extensionAttributes->getVaultPaymentToken();
+        $extensionAttributes = $payment->getExtensionAttributes();
+        $paymentToken = $extensionAttributes->getVaultPaymentToken();
 
-    return ['payment_profile' => $paymentToken->getGatewayToken()];
-  }
+        return ['payment_profile' => $paymentToken->getGatewayToken()];
+    }
 }

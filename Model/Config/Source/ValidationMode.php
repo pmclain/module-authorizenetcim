@@ -20,12 +20,12 @@ use Magento\Framework\Option\ArrayInterface;
 
 class ValidationMode implements ArrayInterface
 {
-  public function toOptionArray()
-  {
-    return [
-      ['value' => 'none', 'label' => __('None')],
-      ['value' => 'testMode', 'label' => __('Test Mode')],
-      ['value' => 'liveMode', 'label' => __('Live Mode')],
-    ];
-  }
+    public function toOptionArray()
+    {
+        return [
+            ['value' => 'none', 'label' => __('None')],
+            ['value' => 'testMode', 'label' => __('Test Mode')],
+            ['value' => 'liveMode', 'label' => __('Live Mode')],
+        ];
+    }
 }

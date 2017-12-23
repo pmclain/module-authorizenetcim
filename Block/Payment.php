@@ -22,36 +22,36 @@ use Magento\Framework\View\Element\Template\Context;
 
 class Payment extends Template
 {
-  /** @var ConfigProvider */
-  protected $_config;
+    /** @var ConfigProvider */
+    protected $_config;
 
-  /**
-   * Payment constructor.
-   * @param Context $context
-   * @param ConfigProvider $configProvider
-   * @param array $data
-   */
-  public function __construct(
-    Context $context,
-    ConfigProvider $configProvider,
-    array $data = []
-  ) {
-    parent::__construct($context);
-    $this->_config = $configProvider;
-  }
+    /**
+     * Payment constructor.
+     * @param Context $context
+     * @param ConfigProvider $configProvider
+     * @param array $data
+     */
+    public function __construct(
+        Context $context,
+        ConfigProvider $configProvider,
+        array $data = []
+    ) {
+        parent::__construct($context);
+        $this->_config = $configProvider;
+    }
 
-  /** @return string */
-  public function getPaymentConfig()
-  {
-    $payment = $this->_config->getConfig()['payment'];
-    $config = $payment[$this->getCode()];
-    $config['code'] = $this->getCode();
-    return json_encode($config, JSON_UNESCAPED_SLASHES);
-  }
+    /** @return string */
+    public function getPaymentConfig()
+    {
+        $payment = $this->_config->getConfig()['payment'];
+        $config = $payment[$this->getCode()];
+        $config['code'] = $this->getCode();
+        return json_encode($config, JSON_UNESCAPED_SLASHES);
+    }
 
-  /** @return string */
-  public function getCode()
-  {
-    return ConfigProvider::CODE;
-  }
+    /** @return string */
+    public function getCode()
+    {
+        return ConfigProvider::CODE;
+    }
 }

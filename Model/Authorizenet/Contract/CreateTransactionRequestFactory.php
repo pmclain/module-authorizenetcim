@@ -21,12 +21,12 @@ use Pmclain\AuthorizenetCim\Model\Authorizenet\AbstractFactory;
 
 class CreateTransactionRequestFactory extends AbstractFactory
 {
-  /**
-   * @param $sourceData
-   * @return CreateTransactionRequest
-   */
-  public function create($sourceData = null)
-  {
-    return $this->_objectManager->create(CreateTransactionRequest::class);
-  }
+    /**
+     * @param $sourceData
+     * @return CreateTransactionRequest
+     */
+    public function create($sourceData = null)
+    {
+        return $this->_objectManager->create(CreateTransactionRequest::class);
+    }
 }

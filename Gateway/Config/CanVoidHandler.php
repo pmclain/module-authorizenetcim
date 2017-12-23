@@ -22,28 +22,28 @@ use Magento\Sales\Api\Data\OrderPaymentInterface;
 
 class CanVoidHandler implements ValueHandlerInterface
 {
-  /** @var SubjectReader */
-  private $_subjectReader;
+    /** @var SubjectReader */
+    private $_subjectReader;
 
-  /**
-   * CanVoidHandler constructor.
-   * @param SubjectReader $subjectReader
-   */
-  public function __construct(SubjectReader $subjectReader)
-  {
-    $this->_subjectReader = $subjectReader;
-  }
+    /**
+     * CanVoidHandler constructor.
+     * @param SubjectReader $subjectReader
+     */
+    public function __construct(SubjectReader $subjectReader)
+    {
+        $this->_subjectReader = $subjectReader;
+    }
 
-  /**
-   * @param array $subject
-   * @param null|int $storeId
-   * @return bool
-   */
-  public function handle(array $subject, $storeId = null)
-  {
-    $paymentDataObject = $this->_subjectReader->readPayment($subject);
-    $payment = $paymentDataObject->getPayment();
+    /**
+     * @param array $subject
+     * @param null|int $storeId
+     * @return bool
+     */
+    public function handle(array $subject, $storeId = null)
+    {
+        $paymentDataObject = $this->_subjectReader->readPayment($subject);
+        $payment = $paymentDataObject->getPayment();
 
-    return $payment instanceof OrderPaymentInterface && !(bool)$payment->getAmountPaid();
-  }
+        return $payment instanceof OrderPaymentInterface && !(bool)$payment->getAmountPaid();
+    }
 }

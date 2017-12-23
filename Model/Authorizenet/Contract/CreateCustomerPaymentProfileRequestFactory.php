@@ -21,12 +21,12 @@ use Pmclain\AuthorizenetCim\Model\Authorizenet\AbstractFactory;
 
 class CreateCustomerPaymentProfileRequestFactory extends AbstractFactory
 {
-  /**
-   * @param $sourceData
-   * @return CreateCustomerPaymentProfileRequest
-   */
-  public function create($sourceData = null)
-  {
-    return $this->_objectManager->create(CreateCustomerPaymentProfileRequest::class);
-  }
+    /**
+     * @param $sourceData
+     * @return CreateCustomerPaymentProfileRequest
+     */
+    public function create($sourceData = null)
+    {
+        return $this->_objectManager->create(CreateCustomerPaymentProfileRequest::class);
+    }
 }

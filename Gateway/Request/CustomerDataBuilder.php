@@ -23,46 +23,46 @@ use Magento\Customer\Model\Session;
 
 class CustomerDataBuilder implements BuilderInterface
 {
-  /** @var SubjectReader */
-  protected $_subjectReader;
+    /** @var SubjectReader */
+    protected $_subjectReader;
 
-  /** @var Session */
-  protected $_session;
+    /** @var Session */
+    protected $_session;
 
-  /** @var CustomerRepositoryInterface */
-  protected $_customerRepository;
+    /** @var CustomerRepositoryInterface */
+    protected $_customerRepository;
 
-  public function __construct(
-    SubjectReader $subjectReader,
-    Session $session,
-    CustomerRepositoryInterface $customerRepository
-  ) {
-    $this->_subjectReader = $subjectReader;
-    $this->_session = $session;
-    $this->_customerRepository = $customerRepository;
-  }
-
-  public function build(array $subject)
-  {
-    if ($this->_session->isLoggedIn()) {
-      return [
-        'customer_id' => $this->_session->getCustomerId(),
-        'profile_id' => $this->_getCimProfileId()
-      ];
+    public function __construct(
+        SubjectReader $subjectReader,
+        Session $session,
+        CustomerRepositoryInterface $customerRepository
+    ) {
+        $this->_subjectReader = $subjectReader;
+        $this->_session = $session;
+        $this->_customerRepository = $customerRepository;
     }
 
-    return [
-      'customer_id' => null,
-      'profile_id' => null
-    ];
-  }
+    public function build(array $subject)
+    {
+        if ($this->_session->isLoggedIn()) {
+            return [
+                'customer_id' => $this->_session->getCustomerId(),
+                'profile_id' => $this->_getCimProfileId()
+            ];
+        }
 
-  /** @return string|null */
-  protected function _getCimProfileId()
-  {
-    $customer = $this->_customerRepository->getById($this->_session->getCustomerId());
-    $cimProfileId = $customer->getCustomAttribute('authorizenet_cim_profile_id');
+        return [
+            'customer_id' => null,
+            'profile_id' => null
+        ];
+    }
 
-    return $cimProfileId ? $cimProfileId->getValue() : null;
-  }
+    /** @return string|null */
+    protected function _getCimProfileId()
+    {
+        $customer = $this->_customerRepository->getById($this->_session->getCustomerId());
+        $cimProfileId = $customer->getCustomAttribute('authorizenet_cim_profile_id');
+
+        return $cimProfileId ? $cimProfileId->getValue() : null;
+    }
 }

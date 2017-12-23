@@ -20,15 +20,18 @@ use Magento\Sales\Model\Order\Payment;
 
 class VoidHandler extends TransactionIdHandler
 {
-  protected function _setTransactionId(Payment $orderPayment, $transaction) {
-    return;
-  }
+    protected function _setTransactionId(Payment $orderPayment, $transaction)
+    {
+        return;
+    }
 
-  protected function _shouldCloseTransaction() {
-    return true;
-  }
+    protected function _shouldCloseTransaction()
+    {
+        return true;
+    }
 
-  protected function _shouldCloseParentTransaction(Payment $orderPayment) {
-    return true;
-  }
+    protected function _shouldCloseParentTransaction(Payment $orderPayment)
+    {
+        return true;
+    }
 }

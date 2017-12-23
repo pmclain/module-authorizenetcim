@@ -20,7 +20,8 @@ use Magento\Sales\Model\Order\Payment;
 
 class RefundHandler extends VoidHandler
 {
-  protected function _shouldCloseParentTransaction(Payment $orderPayment) {
-    return !(bool)$orderPayment->getCreditmemo()->getInvoice()->canRefund();
-  }
+    protected function _shouldCloseParentTransaction(Payment $orderPayment)
+    {
+        return !(bool)$orderPayment->getCreditmemo()->getInvoice()->canRefund();
+    }
 }

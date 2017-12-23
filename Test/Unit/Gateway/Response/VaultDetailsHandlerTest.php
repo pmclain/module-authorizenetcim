@@ -33,173 +33,178 @@ use Magento\Payment\Model\InfoInterface;
 
 class VaultDetailsHandlerTest extends \PHPUnit\Framework\TestCase
 {
-  /** @var VaultDetailsHandler */
-  private $vaultDetailsHandler;
+    /** @var VaultDetailsHandler */
+    private $vaultDetailsHandler;
 
-  /** @var SubjectReader */
-  private $subjectReader;
+    /** @var SubjectReader */
+    private $subjectReader;
 
-  /** @var PaymentDataObjectInterface|MockObject */
-  private $paymentDataObjectMock;
+    /** @var PaymentDataObjectInterface|MockObject */
+    private $paymentDataObjectMock;
 
-  /** @var OrderPaymentExtensionInterface|MockObject */
-  private $paymentExtensionMock;
+    /** @var OrderPaymentExtensionInterface|MockObject */
+    private $paymentExtensionMock;
 
-  /** @var OrderPaymentExtensionInterfaceFactory|MockObject */
-  private $paymentExtensionFactoryMock;
+    /** @var OrderPaymentExtensionInterfaceFactory|MockObject */
+    private $paymentExtensionFactoryMock;
 
-  /** @var Config|MockObject */
-  private $configMock;
+    /** @var Config|MockObject */
+    private $configMock;
 
-  /** @var CreditCardTokenFactory|MockObject */
-  private $creditCardTokenFactoryMock;
+    /** @var CreditCardTokenFactory|MockObject */
+    private $creditCardTokenFactoryMock;
 
-  /** @var PaymentTokenInterface|MockObject */
-  private $paymentTokenMock;
+    /** @var PaymentTokenInterface|MockObject */
+    private $paymentTokenMock;
 
-  /** @var CreateTransactionResponse|MockObject */
-  private $createTransactionResponseMock;
+    /** @var CreateTransactionResponse|MockObject */
+    private $createTransactionResponseMock;
 
-  /** @var TransactionResponseType|MockObject */
-  private $transactionResponseMock;
+    /** @var TransactionResponseType|MockObject */
+    private $transactionResponseMock;
 
-  /** @var InfoInterface|MockObject */
-  private $paymentMock;
+    /** @var InfoInterface|MockObject */
+    private $paymentMock;
 
-  /** @var CustomerProfileIdType|MockObject */
-  private $customerProfileIdMock;
+    /** @var CustomerProfileIdType|MockObject */
+    private $customerProfileIdMock;
 
-  protected function setUp()
-  {
-    $objectManager = new ObjectManager($this);
+    protected function setUp()
+    {
+        $objectManager = new ObjectManager($this);
 
-    $this->subjectReader = $objectManager->getObject(SubjectReader::class);
+        $this->subjectReader = $objectManager->getObject(SubjectReader::class);
 
-    $this->paymentDataObjectMock = $this->getMockBuilder(PaymentDataObjectInterface::class)
-      ->setMethods(['getPayment'])
-      ->getMockForAbstractClass();
+        $this->paymentDataObjectMock = $this->getMockBuilder(PaymentDataObjectInterface::class)
+            ->setMethods(['getPayment'])
+            ->getMockForAbstractClass();
 
-    $this->createTransactionResponseMock = $this->getMockBuilder(CreateTransactionResponse::class)
-      ->disableOriginalConstructor()
-      ->setMethods(['getTransactionResponse'])
-      ->getMock();
+        $this->createTransactionResponseMock = $this->getMockBuilder(CreateTransactionResponse::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getTransactionResponse'])
+            ->getMock();
 
-    $this->transactionResponseMock = $this->getMockBuilder(TransactionResponseType::class)
-      ->disableOriginalConstructor()
-      ->setMethods(['getProfile'])
-      ->getMock();
+        $this->transactionResponseMock = $this->getMockBuilder(TransactionResponseType::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getProfile'])
+            ->getMock();
 
-    $this->customerProfileIdMock = $this->getMockBuilder(CustomerProfileIdType::class)
-      ->disableOriginalConstructor()
-      ->setMethods(['getCustomerPaymentProfileId'])
-      ->getMock();
+        $this->customerProfileIdMock = $this->getMockBuilder(CustomerProfileIdType::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getCustomerPaymentProfileId'])
+            ->getMock();
 
-    $this->creditCardTokenFactoryMock = $this->getMockBuilder(CreditCardTokenFactory::class)
-      ->disableOriginalConstructor()
-      ->setMethods(['create'])
-      ->getMock();
+        $this->creditCardTokenFactoryMock = $this->getMockBuilder(CreditCardTokenFactory::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
 
-    $this->paymentTokenMock = $this->getMockBuilder(PaymentTokenInterface::class)
-      ->setMethods(['setTokenDetails'])
-      ->getMockForAbstractClass();
+        $this->paymentTokenMock = $this->getMockBuilder(PaymentTokenInterface::class)
+            ->setMethods(['setTokenDetails'])
+            ->getMockForAbstractClass();
 
-    $this->paymentMock = $this->getMockBuilder(InfoInterface::class)
-      ->setMethods(['getAdditionalInformation','getExtensionAttributes','setExtensionAttributes'])
-      ->getMockForAbstractClass();
+        $this->paymentMock = $this->getMockBuilder(InfoInterface::class)
+            ->setMethods([
+                'getAdditionalInformation',
+                'getExtensionAttributes',
+                'setExtensionAttributes'
+            ])
+            ->getMockForAbstractClass();
 
-    $this->paymentExtensionFactoryMock = $this->getMockBuilder(OrderPaymentExtensionInterfaceFactory::class)
-      ->disableOriginalConstructor()
-      ->setMethods(['create'])
-      ->getMock();
+        $this->paymentExtensionFactoryMock = $this->getMockBuilder(OrderPaymentExtensionInterfaceFactory::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
 
-    $this->paymentExtensionMock = $this->getMockBuilder(OrderPaymentExtensionInterface::class)
-      ->getMockForAbstractClass();
+        $this->paymentExtensionMock = $this->getMockBuilder(OrderPaymentExtensionInterface::class)
+            ->getMockForAbstractClass();
 
-    $this->paymentExtensionFactoryMock->expects($this->any())
-      ->method('create')
-      ->willReturn($this->paymentExtensionMock);
+        $this->paymentExtensionFactoryMock->expects($this->any())
+            ->method('create')
+            ->willReturn($this->paymentExtensionMock);
 
-    $this->paymentDataObjectMock->expects($this->once())
-      ->method('getPayment')
-      ->willReturn($this->paymentMock);
+        $this->paymentDataObjectMock->expects($this->once())
+            ->method('getPayment')
+            ->willReturn($this->paymentMock);
 
-    $this->createTransactionResponseMock->expects($this->once())
-      ->method('getTransactionResponse')
-      ->willReturn($this->transactionResponseMock);
+        $this->createTransactionResponseMock->expects($this->once())
+            ->method('getTransactionResponse')
+            ->willReturn($this->transactionResponseMock);
 
-    $this->vaultDetailsHandler = $objectManager->getObject(VaultDetailsHandler::class,
-      [
-        '_paymentTokenFactory' => $this->creditCardTokenFactoryMock,
-        '_paymentExtensionFactory' => $this->paymentExtensionFactoryMock,
-        '_subjectReader' => $this->subjectReader,
-        '_config' => $this->configMock,
-      ]
-    );
-  }
+        $this->vaultDetailsHandler = $objectManager->getObject(
+            VaultDetailsHandler::class,
+            [
+                '_paymentTokenFactory' => $this->creditCardTokenFactoryMock,
+                '_paymentExtensionFactory' => $this->paymentExtensionFactoryMock,
+                '_subjectReader' => $this->subjectReader,
+                '_config' => $this->configMock,
+            ]
+        );
+    }
 
-  /** @cover VaultDetailsHandler::handle */
-  public function testHandleNoVaultSave()
-  {
-    $this->paymentMock->expects($this->once())
-      ->method('getAdditionalInformation')
-      ->with('is_active_payment_token_enabler')
-      ->willReturn(false);
+    /** @cover VaultDetailsHandler::handle */
+    public function testHandleNoVaultSave()
+    {
+        $this->paymentMock->expects($this->once())
+            ->method('getAdditionalInformation')
+            ->with('is_active_payment_token_enabler')
+            ->willReturn(false);
 
-    $subject = ['payment' => $this->paymentDataObjectMock];
-    $response = ['object' => $this->createTransactionResponseMock];
+        $subject = ['payment' => $this->paymentDataObjectMock];
+        $response = ['object' => $this->createTransactionResponseMock];
 
-    $this->vaultDetailsHandler->handle($subject, $response);
-  }
+        $this->vaultDetailsHandler->handle($subject, $response);
+    }
 
-  /** @cover VaultDetailsHandler::handle */
-  public function testHandle()
-  {
-    $paymentProfileId = '123456789';
-    $ccExpMonth = '09';
-    $ccExpYear = '2022';
+    /** @cover VaultDetailsHandler::handle */
+    public function testHandle()
+    {
+        $paymentProfileId = '123456789';
+        $ccExpMonth = '09';
+        $ccExpYear = '2022';
 
-    $this->paymentMock->expects($this->at(0))
-      ->method('getAdditionalInformation')
-      ->with('is_active_payment_token_enabler')
-      ->willReturn(true);
+        $this->paymentMock->expects($this->at(0))
+            ->method('getAdditionalInformation')
+            ->with('is_active_payment_token_enabler')
+            ->willReturn(true);
 
-    $this->createTransactionResponseMock->expects($this->once())
-      ->method('getTransactionResponse')
-      ->willReturn($this->transactionResponseMock);
+        $this->createTransactionResponseMock->expects($this->once())
+            ->method('getTransactionResponse')
+            ->willReturn($this->transactionResponseMock);
 
-    $this->transactionResponseMock->expects($this->once())
-      ->method('getProfile')
-      ->willReturn($this->customerProfileIdMock);
+        $this->transactionResponseMock->expects($this->once())
+            ->method('getProfile')
+            ->willReturn($this->customerProfileIdMock);
 
-    $this->customerProfileIdMock->expects($this->once())
-      ->method('getCustomerPaymentProfileId')
-      ->willReturn($paymentProfileId);
+        $this->customerProfileIdMock->expects($this->once())
+            ->method('getCustomerPaymentProfileId')
+            ->willReturn($paymentProfileId);
 
-    $this->creditCardTokenFactoryMock->expects($this->once())
-      ->method('create')
-      ->willReturn($this->paymentTokenMock);
+        $this->creditCardTokenFactoryMock->expects($this->once())
+            ->method('create')
+            ->willReturn($this->paymentTokenMock);
 
-    $this->paymentMock->expects($this->at(1))
-      ->method('getAdditionalInformation')
-      ->with('cc_exp_year')
-      ->willReturn($ccExpYear);
+        $this->paymentMock->expects($this->at(1))
+            ->method('getAdditionalInformation')
+            ->with('cc_exp_year')
+            ->willReturn($ccExpYear);
 
-    $this->paymentMock->expects($this->at(2))
-      ->method('getAdditionalInformation')
-      ->with('cc_exp_month')
-      ->willReturn($ccExpMonth);
+        $this->paymentMock->expects($this->at(2))
+            ->method('getAdditionalInformation')
+            ->with('cc_exp_month')
+            ->willReturn($ccExpMonth);
 
-    $this->paymentTokenMock->expects($this->once())
-      ->method('setGatewayToken')
-      ->with($paymentProfileId);
+        $this->paymentTokenMock->expects($this->once())
+            ->method('setGatewayToken')
+            ->with($paymentProfileId);
 
-    $this->paymentTokenMock->expects($this->once())
-      ->method('setExpiresAt')
-      ->with('2022-10-01 00:00:00');
+        $this->paymentTokenMock->expects($this->once())
+            ->method('setExpiresAt')
+            ->with('2022-10-01 00:00:00');
 
-    $subject = ['payment' => $this->paymentDataObjectMock];
-    $response = ['object' => $this->createTransactionResponseMock];
+        $subject = ['payment' => $this->paymentDataObjectMock];
+        $response = ['object' => $this->createTransactionResponseMock];
 
-    $this->vaultDetailsHandler->handle($subject, $response);
-  }
+        $this->vaultDetailsHandler->handle($subject, $response);
+    }
 }

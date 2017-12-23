@@ -20,7 +20,8 @@ use Magento\Payment\Gateway\Request\BuilderInterface;
 
 class SettlementDataBuilder implements BuilderInterface
 {
-  public function build(array $subject) {
-    return ['capture' => true];
-  }
+    public function build(array $subject)
+    {
+        return ['capture' => true];
+    }
 }
