@@ -3,15 +3,15 @@
  * Pmclain_AuthorizenetCim extension
  * NOTICE OF LICENSE
  *
- * This source file is subject to the GPL v3 License
+ * This source file is subject to the OSL 3.0 License
  * that is bundled with this package in the file LICENSE.txt.
  * It is also available through the world-wide-web at this URL:
- * https://www.gnu.org/licenses/gpl.txt
+ * https://opensource.org/licenses/osl-3.0.php
  *
  * @category  Pmclain
  * @package   Pmclain_AuthorizenetCim
- * @copyright Copyright (c) 2017
- * @license   https://www.gnu.org/licenses/gpl.txt GPL v3 License
+ * @copyright Copyright (c) 2017-2018
+ * @license   Open Software License (OSL 3.0)
  */
 
 namespace Pmclain\AuthorizenetCim\Model\Authorizenet\Contract;
@@ -21,12 +21,12 @@ use Pmclain\AuthorizenetCim\Model\Authorizenet\AbstractFactory;
 
 class PaymentTypeFactory extends AbstractFactory
 {
-  /**
-   * @param $sourceData
-   * @return PaymentType
-   */
-  public function create($sourceData = null)
-  {
-    return $this->_objectManager->create(PaymentType::class);
-  }
+    /**
+     * @param $sourceData
+     * @return PaymentType
+     */
+    public function create($sourceData = null)
+    {
+        return new PaymentType();
+    }
 }

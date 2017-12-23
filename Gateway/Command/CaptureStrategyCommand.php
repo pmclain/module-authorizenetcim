@@ -3,15 +3,15 @@
  * Pmclain_AuthorizenetCim extension
  * NOTICE OF LICENSE
  *
- * This source file is subject to the GPL v3 License
+ * This source file is subject to the OSL 3.0 License
  * that is bundled with this package in the file LICENSE.txt.
  * It is also available through the world-wide-web at this URL:
- * https://www.gnu.org/licenses/gpl.txt
+ * https://opensource.org/licenses/osl-3.0.php
  *
  * @category  Pmclain
  * @package   Pmclain_AuthorizenetCim
- * @copyright Copyright (c) 2017
- * @license   https://www.gnu.org/licenses/gpl.txt GPL v3 License
+ * @copyright Copyright (c) 2017-2018
+ * @license   Open Software License (OSL 3.0)
  */
 
 namespace Pmclain\AuthorizenetCim\Gateway\Command;
@@ -28,100 +28,103 @@ use Magento\Payment\Gateway\Helper\ContextHelper;
 
 class CaptureStrategyCommand implements CommandInterface
 {
-  const SALE = 'sale';
-  const CAPTURE = 'settlement';
+    const SALE = 'sale';
+    const CAPTURE = 'settlement';
 
-  /** @var SearchCriteriaBuilder */
-  private $_searchCriteriaBuilder;
+    /** @var SearchCriteriaBuilder */
+    private $_searchCriteriaBuilder;
 
-  /** @var TransactionRepositoryInterface */
-  private $_transactionRepository;
+    /** @var TransactionRepositoryInterface */
+    private $_transactionRepository;
 
-  /** @var FilterBuilder */
-  private $_filterBuilder;
+    /** @var FilterBuilder */
+    private $_filterBuilder;
 
-  /** @var SubjectReader */
-  private $_subjectReader;
+    /** @var SubjectReader */
+    private $_subjectReader;
 
-  /** @var CommandPoolInterface */
-  private $_commandPool;
+    /** @var CommandPoolInterface */
+    private $_commandPool;
 
-  /**
-   * CaptureStrategyCommand constructor.
-   * @param SearchCriteriaBuilder $searchCriteriaBuilder
-   * @param TransactionRepositoryInterface $transactionRepository
-   * @param FilterBuilder $filterBuilder
-   * @param SubjectReader $subjectReader
-   * @param CommandPoolInterface $commandPool
-   */
-  public function __construct(
-    SearchCriteriaBuilder $searchCriteriaBuilder,
-    TransactionRepositoryInterface $transactionRepository,
-    FilterBuilder $filterBuilder,
-    SubjectReader $subjectReader,
-    CommandPoolInterface $commandPool
-  ) {
-    $this->_searchCriteriaBuilder = $searchCriteriaBuilder;
-    $this->_transactionRepository = $transactionRepository;
-    $this->_filterBuilder = $filterBuilder;
-    $this->_subjectReader = $subjectReader;
-    $this->_commandPool = $commandPool;
-  }
-
-  /**
-   * @param array $commandSubject
-   * @return void
-   */
-  public function execute(array $commandSubject) {
-    $paymentDataObject = $this->_subjectReader->readPayment($commandSubject);
-    $paymentInfo = $paymentDataObject->getPayment();
-    ContextHelper::assertOrderPayment($paymentInfo);
-
-    $command = $this->getCommand($paymentInfo);
-    $this->_commandPool->get($command)->execute($commandSubject);
-  }
-
-  /**
-   * @param OrderPaymentInterface $payment
-   * @return string
-   */
-  private function getCommand(OrderPaymentInterface $payment) {
-    $existsCapture = $this->isExistsCaptureTransaction($payment);
-    if(!$payment->getAuthorizationTransaction() && !$existsCapture) {
-      return self::SALE;
+    /**
+     * CaptureStrategyCommand constructor.
+     * @param SearchCriteriaBuilder $searchCriteriaBuilder
+     * @param TransactionRepositoryInterface $transactionRepository
+     * @param FilterBuilder $filterBuilder
+     * @param SubjectReader $subjectReader
+     * @param CommandPoolInterface $commandPool
+     */
+    public function __construct(
+        SearchCriteriaBuilder $searchCriteriaBuilder,
+        TransactionRepositoryInterface $transactionRepository,
+        FilterBuilder $filterBuilder,
+        SubjectReader $subjectReader,
+        CommandPoolInterface $commandPool
+    ) {
+        $this->_searchCriteriaBuilder = $searchCriteriaBuilder;
+        $this->_transactionRepository = $transactionRepository;
+        $this->_filterBuilder = $filterBuilder;
+        $this->_subjectReader = $subjectReader;
+        $this->_commandPool = $commandPool;
     }
 
-    if(!$existsCapture) {
-      return self::CAPTURE;
+    /**
+     * @param array $commandSubject
+     * @return void
+     */
+    public function execute(array $commandSubject)
+    {
+        $paymentDataObject = $this->_subjectReader->readPayment($commandSubject);
+        $paymentInfo = $paymentDataObject->getPayment();
+        ContextHelper::assertOrderPayment($paymentInfo);
+
+        $command = $this->getCommand($paymentInfo);
+        $this->_commandPool->get($command)->execute($commandSubject);
     }
-  }
 
-  /**
-   * @param OrderPaymentInterface $payment
-   * @return bool
-   */
-  private function isExistsCaptureTransaction(OrderPaymentInterface $payment) {
-    $this->_searchCriteriaBuilder->addFilters(
-      [
-        $this->_filterBuilder
-          ->setField('payment_id')
-          ->setValue($payment->getId())
-          ->create()
-      ]
-    );
+    /**
+     * @param OrderPaymentInterface $payment
+     * @return string
+     */
+    private function getCommand(OrderPaymentInterface $payment)
+    {
+        $existsCapture = $this->isExistsCaptureTransaction($payment);
+        if (!$payment->getAuthorizationTransaction() && !$existsCapture) {
+            return self::SALE;
+        }
 
-    $this->_searchCriteriaBuilder->addFilters(
-      [
-        $this->_filterBuilder
-          ->setField('txn_type')
-          ->setValue(TransactionInterface::TYPE_CAPTURE)
-          ->create()
-      ]
-    );
+        if (!$existsCapture) {
+            return self::CAPTURE;
+        }
+    }
 
-    $searchCriteria = $this->_searchCriteriaBuilder->create();
+    /**
+     * @param OrderPaymentInterface $payment
+     * @return bool
+     */
+    private function isExistsCaptureTransaction(OrderPaymentInterface $payment)
+    {
+        $this->_searchCriteriaBuilder->addFilters(
+            [
+                $this->_filterBuilder
+                    ->setField('payment_id')
+                    ->setValue($payment->getId())
+                    ->create()
+            ]
+        );
 
-    $count = $this->_transactionRepository->getList($searchCriteria)->getTotalCount();
-    return (boolean) $count;
-  }
+        $this->_searchCriteriaBuilder->addFilters(
+            [
+                $this->_filterBuilder
+                    ->setField('txn_type')
+                    ->setValue(TransactionInterface::TYPE_CAPTURE)
+                    ->create()
+            ]
+        );
+
+        $searchCriteria = $this->_searchCriteriaBuilder->create();
+
+        $count = $this->_transactionRepository->getList($searchCriteria)->getTotalCount();
+        return (boolean)$count;
+    }
 }

@@ -3,15 +3,15 @@
  * Pmclain_AuthorizenetCim extension
  * NOTICE OF LICENSE
  *
- * This source file is subject to the GPL v3 License
+ * This source file is subject to the OSL 3.0 License
  * that is bundled with this package in the file LICENSE.txt.
  * It is also available through the world-wide-web at this URL:
- * https://www.gnu.org/licenses/gpl.txt
+ * https://opensource.org/licenses/osl-3.0.php
  *
  * @category  Pmclain
  * @package   Pmclain_AuthorizenetCim
- * @copyright Copyright (c) 2017
- * @license   https://www.gnu.org/licenses/gpl.txt GPL v3 License
+ * @copyright Copyright (c) 2017-2018
+ * @license   Open Software License (OSL 3.0)
  */
 
 namespace Pmclain\AuthorizenetCim\Model\Ui;
@@ -24,47 +24,50 @@ use Magento\Framework\UrlInterface;
 
 class TokenUiComponentProvider implements TokenUiComponentProviderInterface
 {
-  /**
-   * @var TokenUiComponentInterfaceFactory
-   */
-  private $componentFactory;
+    /**
+     * @var TokenUiComponentInterfaceFactory
+     */
+    private $componentFactory;
 
-  /**
-   * @var \Magento\Framework\UrlInterface
-   */
-  private $urlBuilder;
+    /**
+     * @var \Magento\Framework\UrlInterface
+     */
+    private $urlBuilder;
 
-  /**
-   * @param TokenUiComponentInterfaceFactory $componentFactory
-   * @param UrlInterface $urlBuilder
-   */
-  public function __construct(
-    TokenUiComponentInterfaceFactory $componentFactory,
-    UrlInterface $urlBuilder
-  ) {
-    $this->componentFactory = $componentFactory;
-    $this->urlBuilder = $urlBuilder;
-  }
+    /**
+     * @param TokenUiComponentInterfaceFactory $componentFactory
+     * @param UrlInterface $urlBuilder
+     */
+    public function __construct(
+        TokenUiComponentInterfaceFactory $componentFactory,
+        UrlInterface $urlBuilder
+    ) {
+        $this->componentFactory = $componentFactory;
+        $this->urlBuilder = $urlBuilder;
+    }
 
-  /**
-   * Get UI component for token
-   * @param PaymentTokenInterface $paymentToken
-   * @return TokenUiComponentInterface
-   */
-  public function getComponentForToken(PaymentTokenInterface $paymentToken)
-  {
-    $jsonDetails = json_decode($paymentToken->getTokenDetails() ?: '{}', true);
-    $component = $this->componentFactory->create(
-      [
-        'config' => [
-          'code' => ConfigProvider::CC_VAULT_CODE,
-          TokenUiComponentProviderInterface::COMPONENT_DETAILS => $jsonDetails,
-          TokenUiComponentProviderInterface::COMPONENT_PUBLIC_HASH => $paymentToken->getPublicHash()
-        ],
-        'name' => 'Pmclain_AuthorizenetCim/js/view/payment/method-renderer/vault'
-      ]
-    );
+    /**
+     * Get UI component for token
+     * @param PaymentTokenInterface $paymentToken
+     * @return TokenUiComponentInterface
+     */
+    public function getComponentForToken(PaymentTokenInterface $paymentToken)
+    {
+        $jsonDetails = json_decode(
+            $paymentToken->getTokenDetails() ?: '{}',
+            true
+        );
+        $component = $this->componentFactory->create(
+            [
+                'config' => [
+                    'code' => ConfigProvider::CC_VAULT_CODE,
+                    TokenUiComponentProviderInterface::COMPONENT_DETAILS => $jsonDetails,
+                    TokenUiComponentProviderInterface::COMPONENT_PUBLIC_HASH => $paymentToken->getPublicHash()
+                ],
+                'name' => 'Pmclain_AuthorizenetCim/js/view/payment/method-renderer/vault'
+            ]
+        );
 
-    return $component;
-  }
+        return $component;
+    }
 }

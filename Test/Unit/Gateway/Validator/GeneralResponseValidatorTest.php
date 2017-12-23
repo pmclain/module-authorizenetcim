@@ -3,15 +3,15 @@
  * Pmclain_AuthorizenetCim extension
  * NOTICE OF LICENSE
  *
- * This source file is subject to the GPL v3 License
+ * This source file is subject to the OSL 3.0 License
  * that is bundled with this package in the file LICENSE.txt.
  * It is also available through the world-wide-web at this URL:
- * https://www.gnu.org/licenses/gpl.txt
+ * https://opensource.org/licenses/osl-3.0.php
  *
  * @category  Pmclain
  * @package   Pmclain_AuthorizenetCim
- * @copyright Copyright (c) 2017
- * @license   https://www.gnu.org/licenses/gpl.txt GPL v3 License
+ * @copyright Copyright (c) 2017-2018
+ * @license   Open Software License (OSL 3.0)
  */
 
 namespace Pmclain\AuthorizenetCim\Test\Unit\Gateway\Validator;
@@ -27,112 +27,113 @@ use Magento\Payment\Gateway\Validator\ResultInterfaceFactory;
 
 class GeneralResponseValidatorTest extends \PHPUnit\Framework\TestCase
 {
-  /** @var GeneralResponseValidator */
-  private $generalResponseValidator;
+    /** @var GeneralResponseValidator */
+    private $generalResponseValidator;
 
-  /** @var SubjectReader */
-  private $subjectReader;
+    /** @var SubjectReader */
+    private $subjectReader;
 
-  /** @var AnetApiResponseType|MockObject */
-  private $responseMock;
+    /** @var AnetApiResponseType|MockObject */
+    private $responseMock;
 
-  /** @var MessagesType|MockObject */
-  private $messagesMock;
+    /** @var MessagesType|MockObject */
+    private $messagesMock;
 
-  /** @var MessageAType|MockObject */
-  private $messageMock;
+    /** @var MessageAType|MockObject */
+    private $messageMock;
 
-  /** @var ResultInterfaceFactory|MockObject */
-  private $resultInterfaceFactoryMock;
+    /** @var ResultInterfaceFactory|MockObject */
+    private $resultInterfaceFactoryMock;
 
-  public function setUp()
-  {
-    $objectManager = new ObjectManager($this);
+    public function setUp()
+    {
+        $objectManager = new ObjectManager($this);
 
-    $this->subjectReader = $objectManager->getObject(SubjectReader::class);
+        $this->subjectReader = $objectManager->getObject(SubjectReader::class);
 
-    $this->responseMock = $this->getMockBuilder(AnetApiResponseType::class)
-      ->disableOriginalConstructor()
-      ->setMethods(['getMessages','getTransactionResponse'])
-      ->getMock();
+        $this->responseMock = $this->getMockBuilder(AnetApiResponseType::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getMessages', 'getTransactionResponse'])
+            ->getMock();
 
-    $this->messagesMock = $this->getMockBuilder(MessagesType::class)
-      ->disableOriginalConstructor()
-      ->setMethods(['getResultCode','getMessage'])
-      ->getMock();
+        $this->messagesMock = $this->getMockBuilder(MessagesType::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getResultCode', 'getMessage'])
+            ->getMock();
 
-    $this->messageMock = $this->getMockBuilder(MessageAType::class)
-      ->disableOriginalConstructor()
-      ->setMethods(['getText'])
-      ->getMock();
+        $this->messageMock = $this->getMockBuilder(MessageAType::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['getText'])
+            ->getMock();
 
-    $this->resultInterfaceFactoryMock = $this->getMockBuilder(ResultInterfaceFactory::class)
-      ->disableOriginalConstructor()
-      ->setMethods(['create'])
-      ->getMock();
+        $this->resultInterfaceFactoryMock = $this->getMockBuilder(ResultInterfaceFactory::class)
+            ->disableOriginalConstructor()
+            ->setMethods(['create'])
+            ->getMock();
 
-    $this->responseMock->expects($this->any())
-      ->method('getMessages')
-      ->willReturn($this->messagesMock);
+        $this->responseMock->expects($this->any())
+            ->method('getMessages')
+            ->willReturn($this->messagesMock);
 
-    $this->generalResponseValidator = $objectManager->getObject(GeneralResponseValidator::class,
-      [
-        '_subjectReader' => $this->subjectReader,
-        'resultInterfaceFactory' => $this->resultInterfaceFactoryMock
-      ]
-    );
-  }
+        $this->generalResponseValidator = $objectManager->getObject(
+            GeneralResponseValidator::class,
+            [
+                '_subjectReader' => $this->subjectReader,
+                'resultInterfaceFactory' => $this->resultInterfaceFactoryMock
+            ]
+        );
+    }
 
-  public function testValidate()
-  {
-    $this->messagesMock->expects($this->once())
-      ->method('getResultCode')
-      ->willReturn('Ok');
+    public function testValidate()
+    {
+        $this->messagesMock->expects($this->once())
+            ->method('getResultCode')
+            ->willReturn('Ok');
 
-    $this->messagesMock->expects($this->once())
-      ->method('getMessage')
-      ->willReturn([$this->messageMock]);
+        $this->messagesMock->expects($this->once())
+            ->method('getMessage')
+            ->willReturn([$this->messageMock]);
 
-    $this->messageMock->expects($this->once())
-      ->method('getText')
-      ->willReturn('Transaction Approved');
+        $this->messageMock->expects($this->once())
+            ->method('getText')
+            ->willReturn('Transaction Approved');
 
-    $this->resultInterfaceFactoryMock->expects($this->once())
-      ->method('create')
-      ->with([
-        'isValid' => true,
-        'failsDescription' => []
-      ]);
+        $this->resultInterfaceFactoryMock->expects($this->once())
+            ->method('create')
+            ->with([
+                'isValid' => true,
+                'failsDescription' => []
+            ]);
 
-    $subject = ['response' => ['object' => $this->responseMock]];
+        $subject = ['response' => ['object' => $this->responseMock]];
 
-    $this->generalResponseValidator->validate($subject);
-  }
+        $this->generalResponseValidator->validate($subject);
+    }
 
-  /** @cover GeneralResponseValidator::validate */
-  public function testValidateWithError()
-  {
-    $this->messagesMock->expects($this->once())
-      ->method('getResultCode')
-      ->willReturn('Error');
+    /** @cover GeneralResponseValidator::validate */
+    public function testValidateWithError()
+    {
+        $this->messagesMock->expects($this->once())
+            ->method('getResultCode')
+            ->willReturn('Error');
 
-    $this->messagesMock->expects($this->once())
-      ->method('getMessage')
-      ->willReturn([$this->messageMock]);
+        $this->messagesMock->expects($this->once())
+            ->method('getMessage')
+            ->willReturn([$this->messageMock]);
 
-    $this->messageMock->expects($this->once())
-      ->method('getText')
-      ->willReturn('Transaction Declined');
+        $this->messageMock->expects($this->once())
+            ->method('getText')
+            ->willReturn('Transaction Declined');
 
-    $this->resultInterfaceFactoryMock->expects($this->once())
-      ->method('create')
-      ->with([
-        'isValid' => false,
-        'failsDescription' => ['Transaction Declined']
-      ]);
+        $this->resultInterfaceFactoryMock->expects($this->once())
+            ->method('create')
+            ->with([
+                'isValid' => false,
+                'failsDescription' => ['Transaction Declined']
+            ]);
 
-    $subject = ['response' => ['object' => $this->responseMock]];
+        $subject = ['response' => ['object' => $this->responseMock]];
 
-    $this->generalResponseValidator->validate($subject);
-  }
+        $this->generalResponseValidator->validate($subject);
+    }
 }

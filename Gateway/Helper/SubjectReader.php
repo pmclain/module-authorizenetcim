@@ -3,15 +3,15 @@
  * Pmclain_AuthorizenetCim extension
  * NOTICE OF LICENSE
  *
- * This source file is subject to the GPL v3 License
+ * This source file is subject to the OSL 3.0 License
  * that is bundled with this package in the file LICENSE.txt.
  * It is also available through the world-wide-web at this URL:
- * https://www.gnu.org/licenses/gpl.txt
+ * https://opensource.org/licenses/osl-3.0.php
  *
  * @category  Pmclain
  * @package   Pmclain_AuthorizenetCim
- * @copyright Copyright (c) 2017
- * @license   https://www.gnu.org/licenses/gpl.txt GPL v3 License
+ * @copyright Copyright (c) 2017-2018
+ * @license   Open Software License (OSL 3.0)
  */
 
 namespace Pmclain\AuthorizenetCim\Gateway\Helper;
@@ -20,31 +20,33 @@ use Magento\Payment\Gateway\Helper;
 
 class SubjectReader
 {
-  public function readResponseObject(array $subject)
-  {
-    $response = Helper\SubjectReader::readResponse($subject);
+    public function readResponseObject(array $subject)
+    {
+        $response = Helper\SubjectReader::readResponse($subject);
 
-    if (!is_object($response['object'])) {
-      throw new \InvalidArgumentException('Response object does not exist.');
+        if (!is_object($response['object'])) {
+            throw new \InvalidArgumentException('Response object does not exist.');
+        }
+
+        return $response['object'];
     }
 
-    return $response['object'];
-  }
-
-  public function readPayment(array $subject)
-  {
-    return Helper\SubjectReader::readPayment($subject);
-  }
-
-  public function readTransaction(array $subject) {
-    if(!is_object($subject['object'])) {
-      throw new \InvalidArgumentException('Response object does not exist');
+    public function readPayment(array $subject)
+    {
+        return Helper\SubjectReader::readPayment($subject);
     }
 
-    return $subject['object'];
-  }
+    public function readTransaction(array $subject)
+    {
+        if (!is_object($subject['object'])) {
+            throw new \InvalidArgumentException('Response object does not exist');
+        }
 
-  public function readAmount(array $subject) {
-    return Helper\SubjectReader::readAmount($subject);
-  }
+        return $subject['object'];
+    }
+
+    public function readAmount(array $subject)
+    {
+        return Helper\SubjectReader::readAmount($subject);
+    }
 }

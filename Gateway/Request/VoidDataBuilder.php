@@ -3,15 +3,15 @@
  * Pmclain_AuthorizenetCim extension
  * NOTICE OF LICENSE
  *
- * This source file is subject to the GPL v3 License
+ * This source file is subject to the OSL 3.0 License
  * that is bundled with this package in the file LICENSE.txt.
  * It is also available through the world-wide-web at this URL:
- * https://www.gnu.org/licenses/gpl.txt
+ * https://opensource.org/licenses/osl-3.0.php
  *
  * @category  Pmclain
  * @package   Pmclain_AuthorizenetCim
- * @copyright Copyright (c) 2017
- * @license   https://www.gnu.org/licenses/gpl.txt GPL v3 License
+ * @copyright Copyright (c) 2017-2018
+ * @license   Open Software License (OSL 3.0)
  */
 
 namespace Pmclain\AuthorizenetCim\Gateway\Request;
@@ -24,38 +24,37 @@ use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\TransactionRequestTypeFa
 
 class VoidDataBuilder implements BuilderInterface
 {
-  use Formatter;
+    use Formatter;
 
-  /** @var SubjectReader */
-  protected $_subjectReader;
+    /** @var SubjectReader */
+    protected $_subjectReader;
 
-  /** @var TransactionRequestTypeFactory */
-  protected $_transactionRequestFactory;
+    /** @var TransactionRequestTypeFactory */
+    protected $_transactionRequestFactory;
 
-  public function __construct(
-    SubjectReader $subjectReader,
-    TransactionRequestTypeFactory $transactionRequestTypeFactory
-  )
-  {
-    $this->_subjectReader = $subjectReader;
-    $this->_transactionRequestFactory = $transactionRequestTypeFactory;
-  }
-
-  public function build(array $subject)
-  {
-    $paymentDataObject = $this->_subjectReader->readPayment($subject);
-    $payment = $paymentDataObject->getPayment();
-
-    $transactionId = $payment->getParentTransactionId() ?: $payment->getLastTransId();
-
-    if(!$transactionId) {
-      throw new LocalizedException(__('No Transaction to void'));
+    public function __construct(
+        SubjectReader $subjectReader,
+        TransactionRequestTypeFactory $transactionRequestTypeFactory
+    ) {
+        $this->_subjectReader = $subjectReader;
+        $this->_transactionRequestFactory = $transactionRequestTypeFactory;
     }
 
-    $transactionRequest = $this->_transactionRequestFactory->create();
-    $transactionRequest->setRefTransId($transactionId);
-    $transactionRequest->setTransactionType('voidTransaction');
+    public function build(array $subject)
+    {
+        $paymentDataObject = $this->_subjectReader->readPayment($subject);
+        $payment = $paymentDataObject->getPayment();
 
-    return ['transaction_request' => $transactionRequest];
-  }
+        $transactionId = $payment->getParentTransactionId() ?: $payment->getLastTransId();
+
+        if (!$transactionId) {
+            throw new LocalizedException(__('No Transaction to void'));
+        }
+
+        $transactionRequest = $this->_transactionRequestFactory->create();
+        $transactionRequest->setRefTransId($transactionId);
+        $transactionRequest->setTransactionType('voidTransaction');
+
+        return ['transaction_request' => $transactionRequest];
+    }
 }

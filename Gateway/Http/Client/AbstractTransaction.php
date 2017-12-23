@@ -3,15 +3,15 @@
  * Pmclain_AuthorizenetCim extension
  * NOTICE OF LICENSE
  *
- * This source file is subject to the GPL v3 License
+ * This source file is subject to the OSL 3.0 License
  * that is bundled with this package in the file LICENSE.txt.
  * It is also available through the world-wide-web at this URL:
- * https://www.gnu.org/licenses/gpl.txt
+ * https://opensource.org/licenses/osl-3.0.php
  *
  * @category  Pmclain
  * @package   Pmclain_AuthorizenetCim
- * @copyright Copyright (c) 2017
- * @license   https://www.gnu.org/licenses/gpl.txt GPL v3 License
+ * @copyright Copyright (c) 2017-2018
+ * @license   Open Software License (OSL 3.0)
  */
 
 namespace Pmclain\AuthorizenetCim\Gateway\Http\Client;
@@ -25,54 +25,54 @@ use Psr\Log\LoggerInterface;
 
 abstract class AbstractTransaction implements ClientInterface
 {
-  /** @var LoggerInterface */
-  protected $_logger;
+    /** @var LoggerInterface */
+    protected $_logger;
 
-  /** @var Logger */
-  protected $_customLogger;
+    /** @var Logger */
+    protected $_customLogger;
 
-  /** @var AuthorizenetAdapter */
-  protected $_adapter;
+    /** @var AuthorizenetAdapter */
+    protected $_adapter;
 
-  /**
-   * AbstractTransaction constructor.
-   * @param LoggerInterface $logger
-   * @param Logger $customLogger
-   * @param AuthorizenetAdapter $adapter
-   */
-  public function __construct(
-    LoggerInterface $logger,
-    Logger $customLogger,
-    AuthorizenetAdapter $adapter
-  ) {
-    $this->_logger = $logger;
-    $this->_customLogger = $customLogger;
-    $this->_adapter = $adapter;
-  }
-
-  public function placeRequest(TransferInterface $transferObject)
-  {
-    $data = $transferObject->getBody();
-    $log = [
-      'request' => $data,
-      'client' => static::class
-    ];
-
-    $response['object'] = [];
-
-    try {
-      $response['object'] = $this->process($data);
-    } catch (\Exception $e) {
-      $message = __($e->getMessage() ?: 'Sorry, but something went wrong.');
-      $this->_logger->critical($message);
-      throw new ClientException($message);
-    } finally {
-      $log['response'] = (array) $response['object'];
-      $this->_customLogger->debug($log);
+    /**
+     * AbstractTransaction constructor.
+     * @param LoggerInterface $logger
+     * @param Logger $customLogger
+     * @param AuthorizenetAdapter $adapter
+     */
+    public function __construct(
+        LoggerInterface $logger,
+        Logger $customLogger,
+        AuthorizenetAdapter $adapter
+    ) {
+        $this->_logger = $logger;
+        $this->_customLogger = $customLogger;
+        $this->_adapter = $adapter;
     }
 
-    return $response;
-  }
+    public function placeRequest(TransferInterface $transferObject)
+    {
+        $data = $transferObject->getBody();
+        $log = [
+            'request' => $data,
+            'client' => static::class
+        ];
 
-  abstract protected function process(array $data);
+        $response['object'] = [];
+
+        try {
+            $response['object'] = $this->process($data);
+        } catch (\Exception $e) {
+            $message = __($e->getMessage() ?: 'Sorry, but something went wrong.');
+            $this->_logger->critical($message);
+            throw new ClientException($message);
+        } finally {
+            $log['response'] = (array)$response['object'];
+            $this->_customLogger->debug($log);
+        }
+
+        return $response;
+    }
+
+    abstract protected function process(array $data);
 }
