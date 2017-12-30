@@ -18,103 +18,132 @@ namespace Pmclain\AuthorizenetCim\Gateway\Request;
 
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Payment\Helper\Formatter;
+use Pmclain\Authnet\PaymentProfile\CustomerType;
 use Pmclain\AuthorizenetCim\Gateway\Config\Config;
 use Pmclain\AuthorizenetCim\Gateway\Helper\SubjectReader;
-use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\OpaqueDataTypeFactory;
-use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\PaymentTypeFactory;
-use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\TransactionRequestTypeFactory;
-use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\OrderTypeFactory;
-use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\CustomerPaymentProfileTypeFactory;
+use Pmclain\Authnet\PaymentProfile\Payment\OpaqueDataFactory;
+use Pmclain\Authnet\PaymentProfile\Payment\OpaqueData;
+use Pmclain\Authnet\TransactionRequestFactory;
+use Pmclain\Authnet\TransactionRequest;
+use Pmclain\Authnet\PaymentProfileFactory;
+use Pmclain\Authnet\PaymentProfile;
+use Pmclain\Authnet\TransactionRequest\OrderFactory;
+use Pmclain\Authnet\TransactionRequest\Order;
 use Pmclain\AuthorizenetCim\Model\Authorizenet\Payment;
 
 class PaymentDataBuilder implements BuilderInterface
 {
     use Formatter;
 
-    /** @var Config */
-    protected $_config;
+    const CAPTURE = 'capture';
+    const TRANSACTION_REQUEST = 'transaction_request';
+    const PAYMENT = 'payment';
+    const SAVE_IN_VAULT = 'save_in_vault';
+    const PAYMENT_PROFILE = 'payment_profile';
+    const PAYMENT_INFO = 'payment_info';
+    const PAYMENT_INFO_TYPE = 'cc_type';
+    const PAYMENT_INFO_LAST4 = 'cc_last4';
+    const PAYMENT_INFO_EXP_MONTH = 'cc_exp_month';
+    const PAYMENT_INFO_EXP_YEAR = 'cc_exp_year';
 
-    /** @var SubjectReader */
-    protected $_subjectReader;
+    /**
+     * @var Config
+     */
+    protected $config;
 
-    /** @var OpaqueDataTypeFactory */
-    protected $_opaqueDataFactory;
+    /**
+     * @var SubjectReader
+     */
+    protected $subjectReader;
 
-    /** @var PaymentTypeFactory */
-    protected $_paymentFactory;
+    /**
+     * @var OpaqueDataFactory
+     */
+    protected $opaqueDataFactory;
 
-    /** @var TransactionRequestTypeFactory */
-    protected $_transactionRequestFactory;
+    /**
+     * @var TransactionRequestFactory
+     */
+    protected $transactionRequestFactory;
 
-    /** @var OrderTypeFactory */
-    protected $_orderFactory;
+    /**
+     * @var OrderFactory
+     */
+    protected $orderFactory;
 
-    /** @var CustomerPaymentProfileTypeFactory */
-    protected $_paymentProfileFactory;
+    /**
+     * @var PaymentProfileTypeFactory
+     */
+    protected $paymentProfileFactory;
 
-    /** @var Payment */
+    /**
+     * @var Payment
+     */
     protected $payment;
 
     public function __construct(
         Config $config,
         SubjectReader $subjectReader,
-        OpaqueDataTypeFactory $opaqueDataTypeFactory,
-        PaymentTypeFactory $paymentTypeFactory,
-        TransactionRequestTypeFactory $transactionRequestTypeFactory,
-        OrderTypeFactory $orderTypeFactory,
-        CustomerPaymentProfileTypeFactory $customerPaymentProfileTypeFactory,
+        OpaqueDataFactory $opaqueDataFactory,
+        TransactionRequestFactory $transactionRequestFactory,
+        OrderFactory $orderFactory,
+        PaymentProfileFactory $paymentProfileFactory,
         Payment $payment
     ) {
-        $this->_config = $config;
-        $this->_subjectReader = $subjectReader;
-        $this->_opaqueDataFactory = $opaqueDataTypeFactory;
-        $this->_paymentFactory = $paymentTypeFactory;
-        $this->_transactionRequestFactory = $transactionRequestTypeFactory;
-        $this->_orderFactory = $orderTypeFactory;
-        $this->_paymentProfileFactory = $customerPaymentProfileTypeFactory;
+        $this->config = $config;
+        $this->subjectReader = $subjectReader;
+        $this->opaqueDataFactory = $opaqueDataFactory;
+        $this->transactionRequestFactory = $transactionRequestFactory;
+        $this->orderFactory = $orderFactory;
+        $this->paymentProfileFactory = $paymentProfileFactory;
         $this->payment = $payment;
     }
 
     public function build(array $subject)
     {
-        $paymentDataObject = $this->_subjectReader->readPayment($subject);
+        $paymentDataObject = $this->subjectReader->readPayment($subject);
         $payment = $paymentDataObject->getPayment();
         $order = $paymentDataObject->getOrder();
 
-        $opaqueData = $this->_opaqueDataFactory->create();
-        $opaqueData->setDataDescriptor('COMMON.ACCEPT.INAPP.PAYMENT'); //TODO: this should probably pass from the acceptjs response
+        /**
+         * @var OpaqueData $opaqueData
+         */
+        $opaqueData = $this->opaqueDataFactory->create();
+        $opaqueData->setDataDescriptor('COMMON.ACCEPT.INAPP.PAYMENT');
         $opaqueData->setDataValue($payment->getAdditionalInformation('cc_token'));
 
-        $paymentType = $this->_paymentFactory->create();
-        $paymentType->setOpaqueData($opaqueData);
-
-        $paymentProfile = $this->_paymentProfileFactory->create();
+        /**
+         * @var PaymentProfile $paymentProfile
+         */
+        $paymentProfile = $this->paymentProfileFactory->create();
         $paymentProfile->setDefaultPaymentProfile(true);
-        $paymentProfile->setPayment($paymentType);
-        //TODO: should this check the address for company name for determining type?
-        $paymentProfile->setCustomerType('individual');
+        $paymentProfile->setPayment($opaqueData);
+        $paymentProfile->setCustomerType(CustomerType::INDIVIDUAL);
 
-        $orderType = $this->_orderFactory->create();
+        /**
+         * @var Order $orderType
+         */
+        $orderType = $this->orderFactory->create();
         $orderType->setInvoiceNumber($order->getOrderIncrementId());
 
-        //TODO: transaction types should be constants somewhere.
-        $transactionRequest = $this->_transactionRequestFactory->create();
-        $transactionRequest->setTransactionType('authOnlyTransaction');
-        $transactionRequest->setAmount($this->formatPrice($this->_subjectReader->readAmount($subject)));
-        $transactionRequest->setCurrencyCode($this->_config->getCurrency());
+        /**
+         * @var TransactionRequest $transactionRequest
+         */
+        $transactionRequest = $this->transactionRequestFactory->create();
+        $transactionRequest->setTransactionType(TransactionRequest\TransactionType::TYPE_AUTH_ONLY);
+        $transactionRequest->setAmount($this->formatPrice($this->subjectReader->readAmount($subject)));
         $transactionRequest->setOrder($orderType);
 
         $result = [
-            'capture' => false,
-            'transaction_request' => $transactionRequest,
-            'payment' => $paymentProfile,
-            'save_in_vault' => (bool)$payment->getAdditionalInformation('is_active_payment_token_enabler'),
-            'guest_description' => $order->getOrderIncrementId() . '_' . mt_rand() . '-' . time(),
-            'payment_info' => [
-                'cc_type' => $payment->getAdditionalInformation('cc_type'),
-                'cc_last4' => $payment->getAdditionalInformation('cc_last4'),
-                'cc_exp_month' => $payment->getAdditionalInformation('cc_exp_month'),
-                'cc_exp_year' => $payment->getAdditionalInformation('cc_exp_year'),
+            self::CAPTURE => false,
+            self::TRANSACTION_REQUEST => $transactionRequest,
+            self::PAYMENT => $paymentProfile,
+            self::SAVE_IN_VAULT => (bool)$payment->getAdditionalInformation('is_active_payment_token_enabler'),
+            self::PAYMENT_INFO => [
+                self::PAYMENT_INFO_TYPE => $payment->getAdditionalInformation('cc_type'),
+                self::PAYMENT_INFO_LAST4 => $payment->getAdditionalInformation('cc_last4'),
+                self::PAYMENT_INFO_EXP_MONTH => $payment->getAdditionalInformation('cc_exp_month'),
+                self::PAYMENT_INFO_EXP_YEAR => $payment->getAdditionalInformation('cc_exp_year'),
             ],
         ];
 
@@ -126,7 +155,7 @@ class PaymentDataBuilder implements BuilderInterface
          * being sent to the merchant processor.
          */
         if ($this->payment->getProfileId()) {
-            $result['payment_profile'] = $this->payment->getProfileId();
+            $result[self::PAYMENT_PROFILE] = $this->payment->getProfileId();
         }
 
         return $result;

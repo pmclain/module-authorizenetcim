@@ -26,7 +26,7 @@ class Capture extends GeneralResponseValidator
             parent::getResponseValidators(),
             [
                 function ($response) {
-                    $transactionResponse = $response->getTransactionResponse();
+                    $transactionResponse = $response->getData('transactionResponse');
                     return [
                         count($transactionResponse->getErrors()) === 0,
                         [__($transactionResponse->getMessages()[0]->getDescription())]

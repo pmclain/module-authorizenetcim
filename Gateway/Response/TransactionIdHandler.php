@@ -37,7 +37,7 @@ class TransactionIdHandler implements HandlerInterface
 
         if ($paymentDataObject->getPayment() instanceof Payment) {
             $transaction = $this->_subjectReader->readTransaction($response);
-            $transaction = $transaction->getTransactionResponse();
+            $transaction = $transaction->getData('transactionResponse');
             $orderPayment = $paymentDataObject->getPayment();
 
             $this->_setTransactionId(
@@ -53,7 +53,7 @@ class TransactionIdHandler implements HandlerInterface
 
     protected function _setTransactionId(Payment $orderPayment, $transaction)
     {
-        $orderPayment->setTransactionId($transaction->getTransId());
+        $orderPayment->setTransactionId($transaction->getData('transId'));
     }
 
     protected function _shouldCloseTransaction()

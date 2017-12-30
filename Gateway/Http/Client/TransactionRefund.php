@@ -16,10 +16,16 @@
 
 namespace Pmclain\AuthorizenetCim\Gateway\Http\Client;
 
+use Pmclain\AuthorizenetCim\Gateway\Request\PaymentDataBuilder;
+
 class TransactionRefund extends AbstractTransaction
 {
+    /**
+     * @param array $data
+     * @return array
+     */
     protected function process(array $data)
     {
-        return $this->_adapter->refund($data['transaction_request']);
+        return $this->_adapter->refund($data[PaymentDataBuilder::TRANSACTION_REQUEST]);
     }
 }

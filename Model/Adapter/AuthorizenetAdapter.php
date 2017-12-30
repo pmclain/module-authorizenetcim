@@ -19,196 +19,200 @@ namespace Pmclain\AuthorizenetCim\Model\Adapter;
 use Pmclain\AuthorizenetCim\Gateway\Config\Config;
 use Magento\Framework\Exception\PaymentException;
 use Magento\Customer\Api\CustomerRepositoryInterface;
-use net\authorize\api\constants\ANetEnvironment;
-use net\authorize\api\contract\v1\MerchantAuthenticationType;
+use Pmclain\Authnet\TransactionRequest;
+use Pmclain\Authnet\CustomerProfile;
+use Pmclain\Authnet\MerchantAuthentication;
+use Pmclain\AuthorizenetCim\Gateway\Request\AddressDataBuilder;
+use Pmclain\AuthorizenetCim\Gateway\Request\CustomerDataBuilder;
+use Pmclain\AuthorizenetCim\Gateway\Request\PaymentDataBuilder;
+use Pmclain\Authnet\Request\CreateCustomerProfileFactory;
+use Pmclain\Authnet\Request\CreateCustomerProfile;
+use Pmclain\Authnet\ValidationModeFactory;
+use Pmclain\Authnet\ValidationMode;
+use Magento\Framework\DataObjectFactory;
 use Pmclain\AuthorizenetCim\Model\Authorizenet\Payment;
-use Pmclain\AuthorizenetCim\Model\Authorizenet\Controller\CreateTransactionControllerFactory;
-use Pmclain\AuthorizenetCim\Model\Authorizenet\Controller\CreateCustomerPaymentProfileControllerFactory;
-use Pmclain\AuthorizenetCim\Model\Authorizenet\Controller\CreateCustomerProfileControllerFactory;
-use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\CreateTransactionRequestFactory;
-use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\CustomerProfileTypeFactory;
-use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\CreateCustomerPaymentProfileRequestFactory;
-use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\CreateCustomerProfileRequestFactory;
-use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\CustomerProfilePaymentTypeFactory;
-use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\PaymentProfileTypeFactory;
+use Pmclain\Authnet\Request\CreateTransactionFactory;
+use Pmclain\Authnet\Request\CreateTransaction;
+use Pmclain\Authnet\Request\CreateCustomerPaymentProfileFactory;
+use Pmclain\Authnet\Request\CreateCustomerPaymentProfile;
 
 class AuthorizenetAdapter
 {
-    /** @var MerchantAuthenticationType */
-    protected $_merchangeAuthentication;
+    const ERROR_CODE_DUPLICATE = 'E00039';
 
-    /** @var CreateCustomerProfileRequestFactory */
-    protected $_createCustomerProfileRequestFactory;
+    /**
+     * @var CustomerRepositoryInterface
+     */
+    protected $customerRepository;
 
-    /** @var CreateCustomerPaymentProfileRequestFactory */
-    protected $_createCustomerPaymentProfileRequestFactory;
+    /**
+     * @var Config
+     */
+    protected $config;
 
-    /** @var CustomerProfileTypeFactory */
-    protected $_customerProfileFactory;
+    /**
+     * @var MerchantAuthentication
+     */
+    protected $merchantAuth;
 
-    /** @var CustomerProfilePaymentTypeFactory */
-    protected $_customerProfilePaymentFactory;
+    /**
+     * @var CreateCustomerProfileFactory
+     */
+    protected $createCustomerProfileFactory;
 
-    /** @var CreateTransactionRequestFactory */
-    protected $_createTransactionRequestFactory;
+    /**
+     * @var ValidationModeFactory
+     */
+    protected $validationModeFactory;
 
-    /** @var PaymentProfileTypeFactory */
-    protected $_paymentProfileFactory;
+    /**
+     * @var DataObjectFactory
+     */
+    protected $dataObjectFactory;
 
-    /** @var CustomerRepositoryInterface */
-    protected $_customerRepository;
-
-    /** @var CreateTransactionControllerFactory */
-    protected $_createTransactionControllerFactory;
-
-    /** @var CreateCustomerPaymentProfileControllerFactory */
-    protected $_createCustomerPaymentProfileControllerFactory;
-
-    /** @var CreateCustomerProfileControllerFactory */
-    protected $_createCustomerProfileControllerFactory;
-
-    /** @var Config */
-    protected $_config;
-
-    /** @var Payment */
+    /**
+     * @var Payment
+     */
     protected $paymentProfile;
 
+    /**
+     * @var CreateTransactionFactory
+     */
+    protected $createTransactionFactory;
+
+    /**
+     * @var CreateCustomerPaymentProfileFactory
+     */
+    protected $createPaymentProfileFactory;
+
+    /**
+     * AuthorizenetAdapter constructor.
+     * @param CustomerRepositoryInterface $customerRepository
+     * @param Config $config
+     * @param MerchantAuthentication $merchantAuthentication
+     * @param CreateCustomerProfileFactory $createCustomerProfileFactory
+     * @param ValidationModeFactory $validationModeFactory
+     * @param DataObjectFactory $dataObjectFactory
+     * @param Payment $paymentProfile
+     * @param CreateTransactionFactory $createTransactionFactory
+     * @param CreateCustomerPaymentProfileFactory $createPaymentProfileFactory
+     */
     public function __construct(
-        MerchantAuthenticationType $merchantAuthenticationType,
-        CreateCustomerProfileRequestFactory $createCustomerProfileRequestFactory,
-        CreateCustomerPaymentProfileRequestFactory $createCustomerPaymentProfileRequestFactory,
-        CustomerProfileTypeFactory $customerProfileTypeFactory,
-        CustomerProfilePaymentTypeFactory $customerProfilePaymentTypeFactory,
-        CreateTransactionRequestFactory $createTransactionRequestFactory,
-        PaymentProfileTypeFactory $paymentProfileTypeFactory,
         CustomerRepositoryInterface $customerRepository,
-        CreateTransactionControllerFactory $createTransactionControllerFactory,
-        CreateCustomerProfileControllerFactory $createCustomerProfileControllerFactory,
-        CreateCustomerPaymentProfileControllerFactory $createCustomerPaymentProfileControllerFactory,
         Config $config,
-        Payment $payment
+        MerchantAuthentication $merchantAuthentication,
+        CreateCustomerProfileFactory $createCustomerProfileFactory,
+        ValidationModeFactory $validationModeFactory,
+        DataObjectFactory $dataObjectFactory,
+        Payment $paymentProfile,
+        CreateTransactionFactory $createTransactionFactory,
+        CreateCustomerPaymentProfileFactory $createPaymentProfileFactory
     ) {
-        $this->_merchangeAuthentication = $merchantAuthenticationType;
-        $this->_createCustomerProfileRequestFactory = $createCustomerProfileRequestFactory;
-        $this->_createCustomerPaymentProfileRequestFactory = $createCustomerPaymentProfileRequestFactory;
-        $this->_customerProfileFactory = $customerProfileTypeFactory;
-        $this->_customerProfilePaymentFactory = $customerProfilePaymentTypeFactory;
-        $this->_createTransactionRequestFactory = $createTransactionRequestFactory;
-        $this->_paymentProfileFactory = $paymentProfileTypeFactory;
-        $this->_customerRepository = $customerRepository;
-        $this->_config = $config;
-        $this->_createTransactionControllerFactory = $createTransactionControllerFactory;
-        $this->_createCustomerProfileControllerFactory = $createCustomerProfileControllerFactory;
-        $this->_createCustomerPaymentProfileControllerFactory = $createCustomerPaymentProfileControllerFactory;
-        $this->paymentProfile = $payment;
-        $this->_initMerchantAuthentication();
+        $this->customerRepository = $customerRepository;
+        $this->config = $config;
+        $this->merchantAuth = $merchantAuthentication;
+        $this->createCustomerProfileFactory = $createCustomerProfileFactory;
+        $this->validationModeFactory = $validationModeFactory;
+        $this->dataObjectFactory = $dataObjectFactory;
+        $this->paymentProfile = $paymentProfile;
+        $this->createTransactionFactory = $createTransactionFactory;
+        $this->createPaymentProfileFactory = $createPaymentProfileFactory;
+        $this->initMerchantAuthentication();
     }
 
     /**
-     * @param \net\authorize\api\contract\v1\TransactionRequestType $transaction
-     * @return \net\authorize\api\contract\v1\CreateTransactionResponse
+     * @param TransactionRequest $transaction
+     * @return array
      */
     public function refund($transaction)
     {
-        return $this->_submitTransactionRequest($transaction);
+        return $this->submitTransactionRequest($transaction);
     }
 
     /**
-     * @param \net\authorize\api\contract\v1\TransactionRequestType $transaction
-     * @return \net\authorize\api\contract\v1\CreateTransactionResponse
+     * @param TransactionRequest $transaction
+     * @return array
      */
     public function void($transaction)
     {
-        return $this->_submitTransactionRequest($transaction);
+        return $this->submitTransactionRequest($transaction);
     }
 
     /**
-     * @param \net\authorize\api\contract\v1\TransactionRequestType $transaction
-     * @return \net\authorize\api\contract\v1\CreateTransactionResponse
+     * @param TransactionRequest $transaction
+     * @return array
      */
     public function submitForSettlement($transaction)
     {
-        return $this->_submitTransactionRequest($transaction);
+        return $this->submitTransactionRequest($transaction);
     }
 
     /**
      * @param array $data
-     * @return \net\authorize\api\contract\v1\CreateTransactionResponse
+     * @return array
      */
     public function saleForNewProfile(array $data)
     {
-        $data['payment']->setBillTo($data['bill_to_address']);
-        $paymentProfiles = [$data['payment']];
+        $data[PaymentDataBuilder::PAYMENT]->setBillTo($data[AddressDataBuilder::BILL_TO]);
+        $data[CustomerDataBuilder::CUSTOMER_PROFILE]->setPaymentProfile($data[PaymentDataBuilder::PAYMENT]);
+        $customerProfileResponse = $this->createCustomerProfile($data[CustomerDataBuilder::CUSTOMER_PROFILE]);
 
-        $customerProfile = $this->_customerProfileFactory->create();
-        $customerProfile->setMerchantCustomerId($this->_createCustomerMerchantId($data));
-        $customerProfile->setDescription($this->_createCustomerDescription($data));
-        $customerProfile->setPaymentProfiles($paymentProfiles);
-        $customerProfile->setEmail($data['bill_to_address']->getEmail());
-        $customerProfileResponse = $this->_createCustomerProfile($customerProfile);
+        $data[PaymentDataBuilder::PAYMENT_PROFILE] = $customerProfileResponse->getData('customerPaymentProfileIdList')[0];
+        $this->paymentProfile->setProfileId($data[PaymentDataBuilder::PAYMENT_PROFILE]);
+        $data[CustomerDataBuilder::PROFILE_ID] = $customerProfileResponse->getData('customerProfileId');
 
-        $data['payment_profile'] = $customerProfileResponse->getCustomerPaymentProfileIdList()[0];
-        $this->paymentProfile->setProfileId($data['payment_profile']);
-        $data['profile_id'] = $customerProfileResponse->getCustomerProfileId();
-
-        if ($data['customer_id']) {
-            $this->_saveCustomerProfileId(
-                $data['customer_id'],
-                $data['profile_id']
+        if ($data[CustomerDataBuilder::CUSTOMER_ID]) {
+            $this->saveCustomerProfileId(
+                $data[CustomerDataBuilder::CUSTOMER_ID],
+                $data[CustomerDataBuilder::PROFILE_ID]
             );
         }
 
-        return $this->_sale($data);
+        return $this->sale($data);
     }
 
     /**
      * @param array $data
-     * @return \net\authorize\api\contract\v1\CreateTransactionResponse
+     * @return array
      */
     public function saleForExistingProfile(array $data)
     {
-        $data['payment']->setBillTo($data['bill_to_address']);
-        $customerPaymentProfileResponse = $this->_createCustomerPaymentProfile($data);
+        $data[PaymentDataBuilder::PAYMENT]->setBillTo($data[AddressDataBuilder::BILL_TO]);
+        $customerPaymentProfileResponse = $this->createCustomerPaymentProfile($data);
 
         //TODO: if this has an error it should throw an exception. invalid authnet
         // profile_id really mess this up
 
-        $data['payment_profile'] = $customerPaymentProfileResponse->getCustomerPaymentProfileId();
+        $data[PaymentDataBuilder::PAYMENT_PROFILE] = $customerPaymentProfileResponse->getData('customerPaymentProfileId');
 
-        $this->paymentProfile->setProfileId($data['payment_profile']);
+        $this->paymentProfile->setProfileId($data[PaymentDataBuilder::PAYMENT_PROFILE]);
 
-        return $this->_sale($data);
+        return $this->sale($data);
     }
 
     /**
      * @param array $data
-     * @return \net\authorize\api\contract\v1\CreateTransactionResponse
+     * @return array
      */
     public function saleForVault(array $data)
     {
-        return $this->_sale($data);
+        return $this->sale($data);
     }
 
     /**
      * @param array $data
-     * @return \net\authorize\api\contract\v1\CreateTransactionResponse
+     * @return array
      */
-    protected function _sale(array $data)
+    protected function sale(array $data)
     {
-        $paymentProfile = $this->_paymentProfileFactory->create();
-        $paymentProfile->setPaymentProfileId($data['payment_profile']);
+        $data[PaymentDataBuilder::TRANSACTION_REQUEST]->setCustomerProfileId($data[CustomerDataBuilder::PROFILE_ID]);
+        $data[PaymentDataBuilder::TRANSACTION_REQUEST]->setPaymentProfileId($data[PaymentDataBuilder::PAYMENT_PROFILE]);
 
-        $customerProfilePayment = $this->_customerProfilePaymentFactory->create();
-        $customerProfilePayment->setCustomerProfileId($data['profile_id']);
-        $customerProfilePayment->setPaymentProfile($paymentProfile);
-
-        $data['transaction_request']->setProfile($customerProfilePayment);
-
-        if ($data['capture']) {
-            $data['transaction_request']->setTransactionType('authCaptureTransaction');
+        if ($data[PaymentDataBuilder::CAPTURE]) {
+            $data[PaymentDataBuilder::TRANSACTION_REQUEST]->setTransactionType(TransactionRequest\TransactionType::TYPE_AUTH_CAPTURE);
         }
 
-        return $this->_submitTransactionRequest($data['transaction_request']);
+        return $this->submitTransactionRequest($data[PaymentDataBuilder::TRANSACTION_REQUEST]);
     }
 
     /**
@@ -216,54 +220,58 @@ class AuthorizenetAdapter
      * @param $customerProfileId
      * @return $this
      */
-    protected function _saveCustomerProfileId($customerId, $customerProfileId)
+    protected function saveCustomerProfileId($customerId, $customerProfileId)
     {
-        $customer = $this->_customerRepository->getById($customerId);
+        $customer = $this->customerRepository->getById($customerId);
         $customer->setCustomAttribute(
             'authorizenet_cim_profile_id',
             $customerProfileId
         );
 
-        $this->_customerRepository->save($customer);
+        $this->customerRepository->save($customer);
 
         return $this;
     }
 
     /**
-     * @param \net\authorize\api\contract\v1\TransactionRequestType $transaction
-     * @return \net\authorize\api\contract\v1\CreateTransactionResponse
+     * @param TransactionRequest $transaction
+     * @return array
      */
-    protected function _submitTransactionRequest($transaction)
+    protected function submitTransactionRequest($transaction)
     {
-        $transactionRequest = $this->_createTransactionRequestFactory->create();
-        $transactionRequest->setMerchantAuthentication($this->_merchangeAuthentication);
-        $transactionRequest->setTransactionRequest($transaction);
+        /**
+         * @var CreateTransaction $createTransaction
+         */
+        $createTransaction = $this->createTransactionFactory->create(['sandbox' => $this->getIsSandbox()]);
+        $createTransaction->setMerchantAuthentication($this->merchantAuth);
+        $createTransaction->setTransactionRequest($transaction);
 
-        $controller = $this->_createTransactionControllerFactory->create($transactionRequest);
-
-        return $controller->executeWithApiResponse($this->_getEnvironment());
+        return $this->createDataObject($createTransaction->submit());
     }
 
     /**
-     * @param \net\authorize\api\contract\v1\CustomerProfileType $customerProfile
-     * @return \net\authorize\api\contract\v1\CreateCustomerProfileResponse
+     * @param CustomerProfile $customerProfile
+     * @return \Magento\Framework\DataObject
      * @throws PaymentException
      */
-    protected function _createCustomerProfile($customerProfile)
+    protected function createCustomerProfile($customerProfile)
     {
-        $customerProfileRequest = $this->_createCustomerProfileRequestFactory->create();
+        /**
+         * @var CreateCustomerProfile $customerProfileRequest
+         */
+        $customerProfileRequest = $this->createCustomerProfileFactory->create(['sandbox' => $this->getIsSandbox()]);
         $customerProfileRequest->setProfile($customerProfile);
-        $customerProfileRequest->setMerchantAuthentication($this->_merchangeAuthentication);
-        $customerProfileRequest->setValidationMode($this->_config->getValidationMode());
+        $customerProfileRequest->setMerchantAuthentication($this->merchantAuth);
+        $customerProfileRequest->setValidationMode($this->getValidationMode());
 
-        $controller = $this->_createCustomerProfileControllerFactory->create($customerProfileRequest);
+        $result = $this->createDataObject($customerProfileRequest->submit());
 
-        $result = $controller->executeWithApiResponse($this->_getEnvironment());
-
-        if ($result->getMessages()->getResultCode() === 'Error') {
-            throw new PaymentException(
-                __('Profile could not be created.')
-            );
+        if ($result->getMessages()->getData('resultCode') === 'Error') {
+            if ($result->getMessages()->getMessage()[0]->getCode() !== self::ERROR_CODE_DUPLICATE) {
+                throw new PaymentException(
+                    __('Profile could not be created.')
+                );
+            }
         }
 
         return $result;
@@ -271,63 +279,83 @@ class AuthorizenetAdapter
 
     /**
      * @param array $data
-     * @return \net\authorize\api\contract\v1\CreateCustomerPaymentProfileResponse
+     * @return \Magento\Framework\DataObject
+     * @throws PaymentException
      */
-    protected function _createCustomerPaymentProfile(array $data)
+    protected function createCustomerPaymentProfile(array $data)
     {
-        $customerPaymentProfileRequest = $this->_createCustomerPaymentProfileRequestFactory->create();
-        $customerPaymentProfileRequest->setMerchantAuthentication($this->_merchangeAuthentication);
-        $customerPaymentProfileRequest->setCustomerProfileId($data['profile_id']);
-        $customerPaymentProfileRequest->setPaymentProfile($data['payment']);
-        $customerPaymentProfileRequest->setValidationMode($this->_config->getValidationMode());
+        /** @var CreateCustomerPaymentProfile $createPaymentProfileRequest */
+        $createPaymentProfileRequest = $this->createPaymentProfileFactory->create(['sandbox' => $this->getIsSandbox()]);
+        $createPaymentProfileRequest->setMerchantAuthentication($this->merchantAuth);
+        $createPaymentProfileRequest->setCustomerProfileId($data[CustomerDataBuilder::PROFILE_ID]);
+        $createPaymentProfileRequest->setPaymentProfile($data[PaymentDataBuilder::PAYMENT]);
+        $createPaymentProfileRequest->setValidationMode($this->getValidationMode());
 
-        $controller = $this->_createCustomerPaymentProfileControllerFactory->create($customerPaymentProfileRequest);
+        $result = $this->createDataObject($createPaymentProfileRequest->submit());
 
-        return $controller->executeWithApiResponse($this->_getEnvironment());
+        if ($result->getMessages()->getData('resultCode') === 'Error') {
+            if ($result->getMessages()->getMessage()[0]->getCode() !== self::ERROR_CODE_DUPLICATE) {
+                throw new PaymentException(
+                    __('Profile could not be created.')
+                );
+            }
+        }
+
+        return $result;
     }
 
     /**
-     * @param array $data
-     * @return bool|mixed
+     * @return $this
      */
-    protected function _createCustomerMerchantId(array $data)
+    protected function initMerchantAuthentication()
     {
-        if ($data['customer_id']) {
-            return $data['customer_id'];
-        }
-
-        return false;
-    }
-
-    /**
-     * @param array $data
-     * @return string
-     */
-    protected function _createCustomerDescription(array $data)
-    {
-        if ($data['customer_id']) {
-            return $data['bill_to_address']->getEmail();
-        }
-
-        return $data['guest_description'];
-    }
-
-    /** @return $this */
-    protected function _initMerchantAuthentication()
-    {
-        $this->_merchangeAuthentication->setName($this->_config->getApiLoginId());
-        $this->_merchangeAuthentication->setTransactionKey($this->_config->getTransactionKey());
+        $this->merchantAuth->setLoginId($this->config->getApiLoginId());
+        $this->merchantAuth->setTransactionKey($this->config->getTransactionKey());
 
         return $this;
     }
 
-    /** @return string */
-    protected function _getEnvironment()
+    /**
+     * @return bool
+     */
+    protected function getIsSandbox()
     {
-        if ($this->_config->isTest()) {
-            return ANetEnvironment::SANDBOX;
-        }
+        return $this->config->isTest();
+    }
 
-        return ANetEnvironment::PRODUCTION;
+    /**
+     * @return ValidationMode
+     */
+    protected function getValidationMode()
+    {
+        /**
+         * @var ValidationMode $validationMode
+         */
+        $validationMode = $this->validationModeFactory->create();
+
+        try {
+            $validationMode->set($this->config->getValidationMode());
+            return $validationMode;
+        } catch (\Pmclain\Authnet\Exception\InputException $e) {
+            return $validationMode;
+        }
+    }
+
+    /**
+     * @param array $data
+     * @return array|\Magento\Framework\DataObject
+     */
+    protected function createDataObject($data)
+    {
+        $convert = false;
+        foreach ($data as $key => $value) {
+            if (is_array($value)) {
+                $data[$key] = $this->createDataObject($value);
+            }
+            if (!is_numeric($key)) {
+                $convert = true;
+            }
+        }
+        return $convert ? $this->dataObjectFactory->create(['data' => $data]) : $data;
     }
 }
