@@ -55,7 +55,7 @@ class VaultDetailsHandler implements HandlerInterface
     {
         $paymentDO = $this->_subjectReader->readPayment($subject);
         $transaction = $this->_subjectReader->readTransaction($response);
-        $transaction = $transaction->getTransactionResponse();
+        $transaction = $transaction->getData('transactionResponse');
         $payment = $paymentDO->getPayment();
 
         if (!$payment->getAdditionalInformation('is_active_payment_token_enabler')) {
@@ -72,7 +72,7 @@ class VaultDetailsHandler implements HandlerInterface
     private function getVaultPaymentToken($transaction, $payment)
     {
         // Check token existing in gateway response
-        $paymentProfileId = $transaction->getProfile()->getCustomerPaymentProfileId();
+        $paymentProfileId = $transaction->getProfile()->getData('customerPaymentProfileId');
         if (!isset($paymentProfileId)) {
             return null;
         }

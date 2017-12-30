@@ -16,10 +16,12 @@
 
 namespace Pmclain\AuthorizenetCim\Gateway\Http\Client;
 
+use Pmclain\AuthorizenetCim\Gateway\Request\PaymentDataBuilder;
+
 class TransactionSubmitForSettlement extends AbstractTransaction
 {
     protected function process(array $data)
     {
-        return $this->_adapter->submitForSettlement($data['transaction_request']);
+        return $this->_adapter->submitForSettlement($data[PaymentDataBuilder::TRANSACTION_REQUEST]);
     }
 }

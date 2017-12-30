@@ -20,47 +20,92 @@ use Magento\Payment\Gateway\Request\BuilderInterface;
 use Pmclain\AuthorizenetCim\Gateway\Helper\SubjectReader;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Model\Session;
+use Pmclain\Authnet\CustomerProfileFactory;
+use Pmclain\Authnet\CustomerProfile;
 
 class CustomerDataBuilder implements BuilderInterface
 {
-    /** @var SubjectReader */
-    protected $_subjectReader;
+    const CUSTOMER_ID = 'customer_id';
+    const PROFILE_ID = 'profile_id';
+    const CUSTOMER_PROFILE = 'customer_profile';
 
-    /** @var Session */
-    protected $_session;
+    /**
+     * @var SubjectReader
+     */
+    protected $subjectReader;
 
-    /** @var CustomerRepositoryInterface */
-    protected $_customerRepository;
+    /**
+     * @var Session
+     */
+    protected $session;
 
+    /**
+     * @var CustomerRepositoryInterface
+     */
+    protected $customerRepository;
+
+    /**
+     * @var CustomerProfileFactory
+     */
+    protected $customerProfileFactory;
+
+    /**
+     * CustomerDataBuilder constructor.
+     * @param SubjectReader $subjectReader
+     * @param Session $session
+     * @param CustomerRepositoryInterface $customerRepository
+     * @param CustomerProfileFactory $customerProfileFactory
+     */
     public function __construct(
         SubjectReader $subjectReader,
         Session $session,
-        CustomerRepositoryInterface $customerRepository
+        CustomerRepositoryInterface $customerRepository,
+        CustomerProfileFactory $customerProfileFactory
     ) {
-        $this->_subjectReader = $subjectReader;
-        $this->_session = $session;
-        $this->_customerRepository = $customerRepository;
+        $this->subjectReader = $subjectReader;
+        $this->session = $session;
+        $this->customerRepository = $customerRepository;
+        $this->customerProfileFactory = $customerProfileFactory;
     }
 
+    /**
+     * @param array $subject
+     * @return array
+     */
     public function build(array $subject)
     {
-        if ($this->_session->isLoggedIn()) {
-            return [
-                'customer_id' => $this->_session->getCustomerId(),
-                'profile_id' => $this->_getCimProfileId()
-            ];
+        $paymentDataObject = $this->subjectReader->readPayment($subject);
+        $order = $paymentDataObject->getOrder();
+        $email = $order->getBillingAddress()->getEmail();
+
+        $customerId = null;
+        $profileId = null;
+
+        if ($this->session->isLoggedIn()) {
+            $customerId = $this->session->getCustomerId();
+            $profileId = $this->getCimProfileId();
         }
 
+        /**
+         * @var CustomerProfile $customerProfile
+         */
+        $customerProfile = $this->customerProfileFactory->create();
+        $customerProfile->setCustomerId($customerId);
+        $customerProfile->setEmail($email ?: $order->getOrderIncrementId() . '_' . mt_rand() . '-' . time());
+
         return [
-            'customer_id' => null,
-            'profile_id' => null
+            self::CUSTOMER_ID => $customerId,
+            self::PROFILE_ID => $profileId,
+            self::CUSTOMER_PROFILE => $customerProfile,
         ];
     }
 
-    /** @return string|null */
-    protected function _getCimProfileId()
+    /**
+     * @return string|null
+     */
+    protected function getCimProfileId()
     {
-        $customer = $this->_customerRepository->getById($this->_session->getCustomerId());
+        $customer = $this->customerRepository->getById($this->session->getCustomerId());
         $cimProfileId = $customer->getCustomAttribute('authorizenet_cim_profile_id');
 
         return $cimProfileId ? $cimProfileId->getValue() : null;

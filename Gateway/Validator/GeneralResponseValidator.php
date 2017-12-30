@@ -61,7 +61,7 @@ class GeneralResponseValidator extends AbstractValidator
         return [
             function ($response) {
                 return [
-                    $response->getMessages()->getResultCode() === 'Ok',
+                    $response->getMessages()->getData('resultCode') === 'Ok',
                     [__($response->getMessages()->getMessage()[0]->getText())]
                 ];
             }

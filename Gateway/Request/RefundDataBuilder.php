@@ -20,63 +20,71 @@ use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Payment\Helper\Formatter;
 use Magento\Framework\Exception\LocalizedException;
 use Pmclain\AuthorizenetCim\Gateway\Helper\SubjectReader;
-use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\TransactionRequestTypeFactory;
-use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\PaymentTypeFactory;
-use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\CreditCardTypeFactory;
+use Pmclain\Authnet\TransactionRequestFactory;
+use Pmclain\Authnet\TransactionRequest;
+use Pmclain\Authnet\PaymentProfile\Payment\CreditCardFactory;
+use Pmclain\Authnet\PaymentProfile\Payment\CreditCard;
 
 class RefundDataBuilder implements BuilderInterface
 {
     use Formatter;
 
-    /** @var SubjectReader */
-    protected $_subjectReader;
+    const TRANSACTION_REQUEST = 'transaction_request';
+    const REFUND_EXPIRATION = 'XXXX';
 
-    /** @var TransactionRequestTypeFactory */
-    protected $_transactionRequestFactory;
+    /**
+     * @var SubjectReader
+     */
+    protected $subjectReader;
 
-    /** @var CreditCardTypeFactory */
-    protected $_creditCardFactory;
+    /**
+     * @var TransactionRequestFactory
+     */
+    protected $transactionRequestFactory;
 
-    /** @var PaymentTypeFactory */
-    protected $_paymentFactory;
+    /**
+     * @var CreditCardFactory
+     */
+    protected $creditCardFactory;
 
     public function __construct(
         SubjectReader $subjectReader,
-        TransactionRequestTypeFactory $transactionRequestTypeFactory,
-        CreditCardTypeFactory $creditCardTypeFactory,
-        PaymentTypeFactory $paymentTypeFactory
+        TransactionRequestFactory $transactionRequestFactory,
+        CreditCardFactory $creditCardFactory
     ) {
-        $this->_subjectReader = $subjectReader;
-        $this->_transactionRequestFactory = $transactionRequestTypeFactory;
-        $this->_creditCardFactory = $creditCardTypeFactory;
-        $this->_paymentFactory = $paymentTypeFactory;
+        $this->subjectReader = $subjectReader;
+        $this->transactionRequestFactory = $transactionRequestFactory;
+        $this->creditCardFactory = $creditCardFactory;
     }
 
     public function build(array $subject)
     {
-        $paymentDataObject = $this->_subjectReader->readPayment($subject);
+        $paymentDataObject = $this->subjectReader->readPayment($subject);
         $payment = $paymentDataObject->getPayment();
         $amount = null;
 
         try {
-            $amount = $this->formatPrice($this->_subjectReader->readAmount($subject));
+            $amount = $this->formatPrice($this->subjectReader->readAmount($subject));
         } catch (\InvalidArgumentException $e) {
             throw new LocalizedException(__($e->getMessage()));
         }
 
-        $creditCard = $this->_creditCardFactory->create();
+        /**
+         * @var CreditCard $creditCard
+         */
+        $creditCard = $this->creditCardFactory->create();
         $creditCard->setCardNumber($payment->getCcLast4());
-        $creditCard->setExpirationDate('XXXX');
+        $creditCard->setExpirationDate(self::REFUND_EXPIRATION);
 
-        $paymentType = $this->_paymentFactory->create();
-        $paymentType->setCreditCard($creditCard);
-
-        $transactionRequest = $this->_transactionRequestFactory->create();
+        /**
+         * @var TransactionRequest $transactionRequest
+         */
+        $transactionRequest = $this->transactionRequestFactory->create();
         $transactionRequest->setRefTransId($payment->getParentTransactionId());
         $transactionRequest->setAmount($amount);
-        $transactionRequest->setPayment($paymentType);
-        $transactionRequest->setTransactionType('refundTransaction');
+        $transactionRequest->setPayment($creditCard);
+        $transactionRequest->setTransactionType(TransactionRequest\TransactionType::TYPE_REFUND);
 
-        return ['transaction_request' => $transactionRequest];
+        return [self::TRANSACTION_REQUEST => $transactionRequest];
     }
 }

@@ -20,29 +20,34 @@ use Magento\Framework\Exception\LocalizedException;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Payment\Helper\Formatter;
 use Pmclain\AuthorizenetCim\Gateway\Helper\SubjectReader;
-use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\TransactionRequestTypeFactory;
+use Pmclain\Authnet\TransactionRequestFactory;
+use Pmclain\Authnet\TransactionRequest;
 
 class VoidDataBuilder implements BuilderInterface
 {
     use Formatter;
 
-    /** @var SubjectReader */
-    protected $_subjectReader;
+    /**
+     * @var SubjectReader
+     */
+    protected $subjectReader;
 
-    /** @var TransactionRequestTypeFactory */
-    protected $_transactionRequestFactory;
+    /**
+     * @var TransactionRequestFactory
+     */
+    protected $transactionRequestFactory;
 
     public function __construct(
         SubjectReader $subjectReader,
-        TransactionRequestTypeFactory $transactionRequestTypeFactory
+        TransactionRequestFactory $transactionRequestFactory
     ) {
-        $this->_subjectReader = $subjectReader;
-        $this->_transactionRequestFactory = $transactionRequestTypeFactory;
+        $this->subjectReader = $subjectReader;
+        $this->transactionRequestFactory = $transactionRequestFactory;
     }
 
     public function build(array $subject)
     {
-        $paymentDataObject = $this->_subjectReader->readPayment($subject);
+        $paymentDataObject = $this->subjectReader->readPayment($subject);
         $payment = $paymentDataObject->getPayment();
 
         $transactionId = $payment->getParentTransactionId() ?: $payment->getLastTransId();
@@ -51,10 +56,13 @@ class VoidDataBuilder implements BuilderInterface
             throw new LocalizedException(__('No Transaction to void'));
         }
 
-        $transactionRequest = $this->_transactionRequestFactory->create();
+        /**
+         * @var TransactionRequest $transactionRequest
+         */
+        $transactionRequest = $this->transactionRequestFactory->create();
         $transactionRequest->setRefTransId($transactionId);
-        $transactionRequest->setTransactionType('voidTransaction');
+        $transactionRequest->setTransactionType(TransactionRequest\TransactionType::TYPE_VOID);
 
-        return ['transaction_request' => $transactionRequest];
+        return [PaymentDataBuilder::TRANSACTION_REQUEST => $transactionRequest];
     }
 }

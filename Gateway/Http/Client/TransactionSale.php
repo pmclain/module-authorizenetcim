@@ -16,13 +16,16 @@
 
 namespace Pmclain\AuthorizenetCim\Gateway\Http\Client;
 
+use Pmclain\AuthorizenetCim\Gateway\Request\CustomerDataBuilder;
+use Pmclain\AuthorizenetCim\Gateway\Request\PaymentDataBuilder;
+
 class TransactionSale extends AbstractTransaction
 {
     protected function process(array $data)
     {
-        if (isset($data['payment_profile'])) {
+        if (isset($data[PaymentDataBuilder::PAYMENT_PROFILE])) {
             return $this->_adapter->saleForVault($data);
-        } elseif (isset($data['profile_id'])) {
+        } elseif (isset($data[CustomerDataBuilder::PROFILE_ID])) {
             return $this->_adapter->saleForExistingProfile($data);
         }
         return $this->_adapter->saleForNewProfile($data);

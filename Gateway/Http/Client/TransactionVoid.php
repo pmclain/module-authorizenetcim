@@ -16,10 +16,12 @@
 
 namespace Pmclain\AuthorizenetCim\Gateway\Http\Client;
 
+use Pmclain\AuthorizenetCim\Gateway\Request\PaymentDataBuilder;
+
 class TransactionVoid extends AbstractTransaction
 {
     protected function process(array $data)
     {
-        return $this->_adapter->void($data['transaction_request']);
+        return $this->_adapter->void($data[PaymentDataBuilder::TRANSACTION_REQUEST]);
     }
 }

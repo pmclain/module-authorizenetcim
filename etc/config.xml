@@ -54,6 +54,9 @@
       <pmclain_authorizenetcim_vault>
         <model>AuthorizenetCimVaultFacade</model>
         <title>Stored Cards (Authorize.net CIM)</title>
+        <instant_purchase>
+          <supported>1</supported>
+        </instant_purchase>
       </pmclain_authorizenetcim_vault>
     </payment>
   </default>

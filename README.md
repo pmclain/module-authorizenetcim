@@ -13,6 +13,7 @@ frontend or backend.
 * Authorized payments can be captured online during invoice creation.
 * Full and partial refund support when creating credit memos.
 * Support for Multiple Shipping Addresses
+* Supports for Magento InstantPurchase
 
 ## Installation
 In your Magento 2 root directory run  
@@ -26,7 +27,7 @@ Store->Configuration->Sales->Payment Methods->Authorize.net CIM
 ## Magento Version Support
 | Module Version | Magento Version |
 | -------------- | --------------- |
-| v0.1.x         | v2.2.x          |
+| v1.x           | v2.2.x          |
 | v0.1.x         | v2.1.x          |
 | None           | v2.0.x          |
 

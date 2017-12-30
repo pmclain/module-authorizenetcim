@@ -22,6 +22,6 @@ class SettlementDataBuilder implements BuilderInterface
 {
     public function build(array $subject)
     {
-        return ['capture' => true];
+        return [PaymentDataBuilder::CAPTURE => true];
     }
 }

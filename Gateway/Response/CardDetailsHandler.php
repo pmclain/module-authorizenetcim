@@ -35,13 +35,12 @@ class CardDetailsHandler implements HandlerInterface
     {
         $paymentDataObject = $this->_subjectReader->readPayment($subject);
         $transaction = $this->_subjectReader->readTransaction($response);
-        $transaction = $transaction->getTransactionResponse();
+        $transaction = $transaction->getData('transactionResponse');
         $payment = $paymentDataObject->getPayment();
         ContextHelper::assertOrderPayment($payment);
 
-
-        $payment->setCcLast4($this->_getLast4($transaction->getAccountNumber()));
-        $payment->setCcType($transaction->getAccountType());
+        $payment->setCcLast4($this->_getLast4($transaction->getData('accountNumber')));
+        $payment->setCcType($transaction->getData('accountType'));
     }
 
     protected function _getLast4($string)
