@@ -21,11 +21,15 @@ use Pmclain\AuthorizenetCim\Gateway\Helper\SubjectReader;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Model\Session;
 use Magento\Backend\Model\Session\Quote;
+use Pmclain\Authnet\CustomerProfileFactory;
+use Pmclain\Authnet\CustomerProfile;
 
 class Admin extends CustomerDataBuilder
 {
-    /** @var Quote */
-    protected $_adminSession;
+    /**
+     * @var Quote
+     */
+    protected $adminSession;
 
     /**
      * Admin constructor.
@@ -38,35 +42,56 @@ class Admin extends CustomerDataBuilder
         SubjectReader $subjectReader,
         Session $customerSession,
         CustomerRepositoryInterface $customerRepository,
-        Quote $session
+        Quote $session,
+        CustomerProfileFactory $customerProfileFactory
     ) {
         parent::__construct(
             $subjectReader,
             $customerSession,
-            $customerRepository
+            $customerRepository,
+            $customerProfileFactory
         );
-        $this->_adminSession = $session;
+        $this->adminSession = $session;
     }
 
+    /**
+     * @param array $subject
+     * @return array
+     */
     public function build(array $subject)
     {
-        if ($this->_adminSession->getCustomerId()) {
-            return [
-                'customer_id' => $this->_adminSession->getCustomerId(),
-                'profile_id' => $this->_getCimProfileId()
-            ];
+        $paymentDataObject = $this->subjectReader->readPayment($subject);
+        $order = $paymentDataObject->getOrder();
+        $email = $order->getBillingAddress()->getEmail();
+
+        $customerId = null;
+        $profileId = null;
+
+        if ($this->adminSession->getCustomerId()) {
+            $customerId = $this->adminSession->getCustomerId();
+            $profileId = $this->getCimProfileId();
         }
 
+        /**
+         * @var CustomerProfile $customerProfile
+         */
+        $customerProfile = $this->customerProfileFactory->create();
+        $customerProfile->setCustomerId($customerId);
+        $customerProfile->setEmail($email ?: $order->getOrderIncrementId() . '_' . mt_rand() . '-' . time());
+
         return [
-            'customer_id' => null,
-            'profile_id' => null
+            self::CUSTOMER_ID => $customerId,
+            self::PROFILE_ID => $profileId,
+            self::CUSTOMER_PROFILE => $customerProfile,
         ];
     }
 
-    /** @return string|null */
-    protected function _getCimProfileId()
+    /**
+     * @return string|null
+     */
+    protected function getCimProfileId()
     {
-        $customer = $this->_customerRepository->getById($this->_adminSession->getCustomerId());
+        $customer = $this->customerRepository->getById($this->adminSession->getCustomerId());
         $cimProfileId = $customer->getCustomAttribute('authorizenet_cim_profile_id');
 
         return $cimProfileId ? $cimProfileId->getValue() : null;

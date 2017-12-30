@@ -35,10 +35,21 @@ class DataAssignObserver extends AbstractDataAssignObserver
             return;
         }
 
-        $paymentInfo->setAdditionalInformation('cc_token', $additionalData['cc_token']);
-        $paymentInfo->setAdditionalInformation('cc_last4', $additionalData['cc_last4']);
-        $paymentInfo->setAdditionalInformation('cc_exp_month', $additionalData['cc_exp_month']);
-        $paymentInfo->setAdditionalInformation('cc_exp_year', $additionalData['cc_exp_year']);
-        $paymentInfo->setAdditionalInformation('cc_type', $additionalData['cc_type']);
+        // This smells, but i'm tired of fucking with this.
+        if (isset($additionalData['cc_token'])) {
+            $paymentInfo->setAdditionalInformation('cc_token', $additionalData['cc_token']);
+        }
+        if (isset($additionalData['cc_last4'])) {
+            $paymentInfo->setAdditionalInformation('cc_last4', $additionalData['cc_last4']);
+        }
+        if (isset($additionalData['cc_exp_month'])) {
+            $paymentInfo->setAdditionalInformation('cc_exp_month', $additionalData['cc_exp_month']);
+        }
+        if (isset($additionalData['cc_exp_year'])) {
+            $paymentInfo->setAdditionalInformation('cc_exp_year', $additionalData['cc_exp_year']);
+        }
+        if (isset($additionalData['cc_type'])) {
+            $paymentInfo->setAdditionalInformation('cc_type', $additionalData['cc_type']);
+        }
     }
 }

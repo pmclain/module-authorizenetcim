@@ -20,29 +20,46 @@ use Magento\Framework\Exception\LocalizedException;
 use Pmclain\AuthorizenetCim\Gateway\Helper\SubjectReader;
 use Magento\Payment\Gateway\Request\BuilderInterface;
 use Magento\Payment\Helper\Formatter;
-use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\TransactionRequestTypeFactory;
+use Pmclain\Authnet\TransactionRequestFactory;
+use Pmclain\Authnet\TransactionRequest;
 
 class CaptureDataBuilder implements BuilderInterface
 {
     use Formatter;
 
-    /** @var SubjectReader */
-    protected $_subjectReader;
+    const TRANSACTION_REQUEST = 'transaction_request';
 
-    /** @var TransactionRequestTypeFactory */
-    protected $_transactionRequestFactory;
+    /**
+     * @var SubjectReader
+     */
+    protected $subjectReader;
 
+    /**
+     * @var TransactionRequestFactory
+     */
+    protected $transactionRequestFactory;
+
+    /**
+     * CaptureDataBuilder constructor.
+     * @param SubjectReader $subjectReader
+     * @param TransactionRequestFactory $transactionRequestFactory
+     */
     public function __construct(
         SubjectReader $subjectReader,
-        TransactionRequestTypeFactory $transactionRequestTypeFactory
+        TransactionRequestFactory $transactionRequestFactory
     ) {
-        $this->_subjectReader = $subjectReader;
-        $this->_transactionRequestFactory = $transactionRequestTypeFactory;
+        $this->subjectReader = $subjectReader;
+        $this->transactionRequestFactory = $transactionRequestFactory;
     }
 
+    /**
+     * @param array $subject
+     * @return array
+     * @throws LocalizedException
+     */
     public function build(array $subject)
     {
-        $paymentDataObject = $this->_subjectReader->readPayment($subject);
+        $paymentDataObject = $this->subjectReader->readPayment($subject);
         $payment = $paymentDataObject->getPayment();
         $transactionId = $payment->getCcTransId();
 
@@ -50,11 +67,14 @@ class CaptureDataBuilder implements BuilderInterface
             throw new LocalizedException(__('No Authorization Transaction to capture'));
         }
 
-        $tranactionRequest = $this->_transactionRequestFactory->create();
-        $tranactionRequest->setRefTransId($transactionId);
-        $tranactionRequest->setAmount($this->_subjectReader->readAmount($subject));
-        $tranactionRequest->setTransactionType('priorAuthCaptureTransaction');
+        /**
+         * @var TransactionRequest $transactionRequest
+         */
+        $transactionRequest = $this->transactionRequestFactory->create();
+        $transactionRequest->setRefTransId($transactionId);
+        $transactionRequest->setAmount($this->subjectReader->readAmount($subject));
+        $transactionRequest->setTransactionType(TransactionRequest\TransactionType::TYPE_PRIOR_AUTH_CAPTURE);
 
-        return ['transaction_request' => $tranactionRequest];
+        return [self::TRANSACTION_REQUEST => $transactionRequest];
     }
 }

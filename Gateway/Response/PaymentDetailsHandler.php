@@ -34,17 +34,17 @@ class PaymentDetailsHandler implements HandlerInterface
     {
         $paymentDataObject = $this->_subjectReader->readPayment($handlingSubject);
         $transaction = $this->_subjectReader->readTransaction($response);
-        $transaction = $transaction->getTransactionResponse();
+        $transaction = $transaction->getData('transactionResponse');
         $payment = $paymentDataObject->getPayment();
 
-        $payment->setCcTransId($transaction->getTransId());
-        $payment->setLastTransId($transaction->getTransId());
+        $payment->setCcTransId($transaction->getData('transId'));
+        $payment->setLastTransId($transaction->getData('transId'));
 
         $additionalInformation = [
-            'auth_code' => $transaction->getAuthCode(),
-            'avs_code' => $transaction->getAvsResultCode(),
-            'cavv_code' => $transaction->getCavvResultCode(),
-            'cvv_code' => $transaction->getCvvResultCode()
+            'auth_code' => $transaction->getData('authCode'),
+            'avs_code' => $transaction->getData('avsResultCode'),
+            'cavv_code' => $transaction->getData('cavvResultCode'),
+            'cvv_code' => $transaction->getData('cvvResultCode')
         ];
 
         foreach ($additionalInformation as $key => $value) {

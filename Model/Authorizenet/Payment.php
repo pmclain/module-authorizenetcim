@@ -22,7 +22,9 @@ class Payment extends DataObject
 {
     const PROFILE_ID = 'profile_id';
 
-    /** @return string */
+    /**
+     * @return string
+     */
     public function getProfileId()
     {
         return $this->getData(self::PROFILE_ID);
