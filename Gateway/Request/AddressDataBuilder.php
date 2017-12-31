@@ -76,8 +76,8 @@ class AddressDataBuilder implements BuilderInterface
          * @var Address $address
          */
         $address = $this->addressFactory->create();
-        $address->setFirstName($magentoAddress->getFirstname());
-        $address->setLastName($magentoAddress->getLastname());
+        $address->setFirstname($magentoAddress->getFirstname());
+        $address->setLastname($magentoAddress->getLastname());
         $address->setCompany($magentoAddress->getCompany());
         $address->setAddress($magentoAddress->getStreetLine1());
         $address->setCity($magentoAddress->getCity());

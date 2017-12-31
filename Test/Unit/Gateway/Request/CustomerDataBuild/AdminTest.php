@@ -16,21 +16,34 @@
 
 namespace Pmclain\AuthorizenetCim\Test\Unit\Gateway\Request\CustomerDataBuilder;
 
+use Pmclain\Authnet\CustomerProfile;
+use Pmclain\Authnet\CustomerProfileFactory;
+use Pmclain\AuthorizenetCim\Gateway\Helper\SubjectReader;
 use Pmclain\AuthorizenetCim\Gateway\Request\CustomerDataBuilder\Admin;
 use \PHPUnit_Framework_MockObject_MockObject as MockObject;
-use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
+use Magento\Backend\Model\Session\Quote;
 use Magento\Customer\Api\CustomerRepositoryInterface;
 use Magento\Customer\Api\Data\CustomerInterface;
-use Magento\Backend\Model\Session\Quote;
 use Magento\Framework\Api\AttributeInterface;
+use Magento\Customer\Model\Session;
+use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
+use Magento\Payment\Gateway\Data\OrderAdapterInterface;
+use Magento\Payment\Gateway\Data\AddressAdapterInterface;
 
 class AdminTest extends \PHPUnit\Framework\TestCase
 {
+    const EMAIL = 'user_1@example.com';
+    const PROFILE_ID = '12345';
+    const CUSTOMER_ID = '12';
+
     /** @var Admin */
     private $customerDataBuilder;
 
+    /** @var SubjectReader */
+    private $subjectReader;
+
     /** @var CustomerRepositoryInterface|MockObject */
-    private $customerRespositoryMock;
+    private $customerRepositoryMock;
 
     /** @var CustomerInterface|MockObject */
     private $customerMock;
@@ -41,116 +54,107 @@ class AdminTest extends \PHPUnit\Framework\TestCase
     /** @var AttributeInterface|MockObject */
     private $attributeMock;
 
+    /** @var CustomerProfileFactory|MockObject */
+    private $customerProfileFactoryMock;
+
+    /** @var Session|MockObject */
+    private $sessionMock;
+
+    /** @var PaymentDataObjectInterface|MockObject */
+    private $paymentDataObjectMock;
+
+    /** @var OrderAdapterInterface|MockObject */
+    private $orderMock;
+
+    /** @var AddressAdapterInterface|MockObject */
+    private $addressMock;
+
     protected function setUp()
     {
-        $objectManager = new ObjectManager($this);
-
-        $this->customerRespositoryMock = $this->getMockBuilder(CustomerRepositoryInterface::class)
-            ->setMethods(['getById'])
-            ->getMockForAbstractClass();
-
-        $this->customerMock = $this->getMockBuilder(CustomerInterface::class)
-            ->setMethods(['getCustomAttribute'])
-            ->getMockForAbstractClass();
-
+        $this->subjectReader = new SubjectReader();
+        $this->customerRepositoryMock = $this->createMock(CustomerRepositoryInterface::class);
+        $this->customerMock = $this->createMock(CustomerInterface::class);
         $this->adminSessionMock = $this->getMockBuilder(Quote::class)
             ->disableOriginalConstructor()
             ->setMethods(['getCustomerId'])
             ->getMock();
+        $this->attributeMock = $this->createMock(AttributeInterface::class);
+        $this->customerProfileFactoryMock = $this->createMock(CustomerProfileFactory::class);
+        $this->sessionMock = $this->createMock(Session::class);
+        $this->paymentDataObjectMock = $this->createMock(PaymentDataObjectInterface::class);
+        $this->orderMock = $this->createMock(OrderAdapterInterface::class);
+        $this->addressMock = $this->createMock(AddressAdapterInterface::class);
 
-        $this->attributeMock = $this->getMockBuilder(AttributeInterface::class)
-            ->setMethods(['getValue'])
-            ->getMockForAbstractClass();
+        $this->paymentDataObjectMock->method('getOrder')
+            ->willReturn($this->orderMock);
 
-        $this->customerDataBuilder = $objectManager->getObject(
-            Admin::class,
-            [
-                '_adminSession' => $this->adminSessionMock,
-                '_customerRepository' => $this->customerRespositoryMock,
-            ]
+        $this->orderMock->method('getBillingAddress')
+            ->willReturn($this->addressMock);
+
+        $this->addressMock->method('getEmail')
+            ->willReturn(self::EMAIL);
+
+        $this->customerProfileFactoryMock->method('create')
+            ->willReturn(new CustomerProfile());
+
+        $this->customerRepositoryMock->method('getById')
+            ->willReturn($this->customerMock);
+
+        $this->customerMock->method('getCustomAttribute')
+            ->with('authorizenet_cim_profile_id')
+            ->willReturn($this->attributeMock);
+
+        $this->customerDataBuilder = new Admin(
+            $this->subjectReader,
+            $this->sessionMock,
+            $this->customerRepositoryMock,
+            $this->adminSessionMock,
+            $this->customerProfileFactoryMock
         );
     }
 
     /** @cover CustomerDataBuilder::build */
     public function testBuildNewCustomer()
     {
-        $this->adminSessionMock->expects($this->once())
-            ->method('getCustomerId')
+        $this->adminSessionMock->method('getCustomerId')
             ->willReturn('');
 
-        $result = $this->customerDataBuilder->build([]);
+        $result = $this->customerDataBuilder->build(['payment' => $this->paymentDataObjectMock]);
 
-        $this->assertEquals(
-            [
-                'customer_id' => null,
-                'profile_id' => null,
-            ],
-            $result
-        );
+        $this->assertInstanceOf(CustomerProfile::class, $result[Admin::CUSTOMER_PROFILE]);
+        $this->assertNull($result[Admin::PROFILE_ID]);
+        $this->assertNull($result[Admin::CUSTOMER_ID]);
     }
 
     /** @cover CustomerDataBuilder::build */
     public function testBuildCustomerHasCimProfile()
     {
-        $cimProfileId = '123456789';
-        $customerId = '1';
+        $this->adminSessionMock->method('getCustomerId')
+            ->willReturn(self::CUSTOMER_ID);
 
-        $this->adminSessionMock->expects($this->exactly(3))
-            ->method('getCustomerId')
-            ->willReturn($customerId);
+        $this->attributeMock->method('getValue')
+            ->willReturn(self::PROFILE_ID);
 
-        $this->customerRespositoryMock->expects($this->once())
-            ->method('getById')
-            ->with($customerId)
-            ->willReturn($this->customerMock);
+        $result = $this->customerDataBuilder->build(['payment' => $this->paymentDataObjectMock]);
 
-        $this->customerMock->expects($this->once())
-            ->method('getCustomAttribute')
-            ->with('authorizenet_cim_profile_id')
-            ->willReturn($this->attributeMock);
-
-        $this->attributeMock->expects($this->once())
-            ->method('getValue')
-            ->willReturn($cimProfileId);
-
-        $result = $this->customerDataBuilder->build([]);
-
-        $this->assertEquals(
-            [
-                'customer_id' => $customerId,
-                'profile_id' => $cimProfileId,
-            ],
-            $result
-        );
+        $this->assertInstanceOf(CustomerProfile::class, $result[Admin::CUSTOMER_PROFILE]);
+        $this->assertEquals(self::PROFILE_ID, $result[Admin::PROFILE_ID]);
+        $this->assertEquals(self::CUSTOMER_ID, $result[Admin::CUSTOMER_ID]);
     }
 
     /** @cover CustomerDataBuilder::build */
     public function testBuildCustomerWithoutCimProfile()
     {
-        $customerId = '1';
+        $this->adminSessionMock->method('getCustomerId')
+            ->willReturn(self::CUSTOMER_ID);
 
-        $this->adminSessionMock->expects($this->exactly(3))
-            ->method('getCustomerId')
-            ->willReturn($customerId);
-
-        $this->customerRespositoryMock->expects($this->once())
-            ->method('getById')
-            ->with($customerId)
-            ->willReturn($this->customerMock);
-
-        $this->customerMock->expects($this->once())
-            ->method('getCustomAttribute')
-            ->with('authorizenet_cim_profile_id')
+        $this->attributeMock->method('getValue')
             ->willReturn(null);
 
-        $result = $this->customerDataBuilder->build([]);
+        $result = $this->customerDataBuilder->build(['payment' => $this->paymentDataObjectMock]);
 
-        $this->assertEquals(
-            [
-                'customer_id' => $customerId,
-                'profile_id' => null,
-            ],
-            $result
-        );
+        $this->assertInstanceOf(CustomerProfile::class, $result[Admin::CUSTOMER_PROFILE]);
+        $this->assertNull($result[Admin::PROFILE_ID]);
+        $this->assertEquals(self::CUSTOMER_ID, $result[Admin::CUSTOMER_ID]);
     }
 }
