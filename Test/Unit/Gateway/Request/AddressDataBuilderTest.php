@@ -18,13 +18,12 @@ namespace Pmclain\AuthorizenetCim\Test\Unit\Gateway\Request;
 
 use Pmclain\AuthorizenetCim\Gateway\Request\AddressDataBuilder;
 use \PHPUnit_Framework_MockObject_MockObject as MockObject;
-use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Pmclain\AuthorizenetCim\Gateway\Helper\SubjectReader;
-use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\CustomerAddressTypeFactory;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Payment\Gateway\Data\OrderAdapterInterface;
 use Magento\Payment\Gateway\Data\AddressAdapterInterface;
-use net\authorize\api\contract\v1\CustomerAddressType;
+use Pmclain\Authnet\PaymentProfile\Address;
+use Pmclain\Authnet\PaymentProfile\AddressFactory;
 
 class AddressDataBuilderTest extends \PHPUnit\Framework\TestCase
 {
@@ -34,8 +33,8 @@ class AddressDataBuilderTest extends \PHPUnit\Framework\TestCase
     /** @var SubjectReader */
     private $subjectReader;
 
-    /** @var CustomerAddressTypeFactory|MockObject */
-    private $customerAddressFactoryMock;
+    /** @var AddressFactory|MockObject */
+    private $addressFactoryMock;
 
     /** @var PaymentDataObjectInterface|MockObject */
     private $paymentDataObjectMock;
@@ -46,93 +45,56 @@ class AddressDataBuilderTest extends \PHPUnit\Framework\TestCase
     /** @var AddressAdapterInterface|MockObject */
     private $addressMock;
 
-    /** @var CustomerAddressType */
-    private $customerAddress;
-
     protected function setUp()
     {
-        $objectManager = new ObjectManager($this);
+        $this->subjectReader = new SubjectReader();
 
-        $this->subjectReader = $objectManager->getObject(SubjectReader::class);
+        $this->addressFactoryMock = $this->createMock(AddressFactory::class);
+        $this->paymentDataObjectMock = $this->createMock(PaymentDataObjectInterface::class);
+        $this->orderMock = $this->createMock(OrderAdapterInterface::class);
+        $this->addressMock = $this->createMock(AddressAdapterInterface::class);
 
-        $this->customerAddressFactoryMock = $this->getMockBuilder(CustomerAddressTypeFactory::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['create'])
-            ->getMock();
-
-        $this->customerAddress = $objectManager->getObject(CustomerAddressType::class);
-
-        $this->paymentDataObjectMock = $this->getMockBuilder(PaymentDataObjectInterface::class)
-            ->setMethods(['getOrder'])
-            ->getMockForAbstractClass();
-
-        $this->orderMock = $this->getMockBuilder(OrderAdapterInterface::class)
-            ->setMethods(['getBillingAddress'])
-            ->getMockForAbstractClass();
-
-        $this->addressMock = $this->getMockBuilder(AddressAdapterInterface::class)
-            ->setMethods([
-                'getFirstname',
-                'getLastname',
-                'getCompany',
-                'getStreetLine1',
-                'getCity',
-                'getRegionCode',
-                'getPostcode',
-                'getCountryId',
-                'getTelephone',
-                'getEmail'
-            ])->getMockForAbstractClass();
-
-        $this->addressDataBuilder = $objectManager->getObject(
-            AddressDataBuilder::class,
-            [
-                '_subjectReader' => $this->subjectReader,
-                '_customerAddressFactory' => $this->customerAddressFactoryMock,
-            ]
+        $this->addressDataBuilder = new AddressDataBuilder(
+            $this->subjectReader,
+            $this->addressFactoryMock
         );
     }
 
     public function testBuild()
     {
-        $this->paymentDataObjectMock->expects($this->once())
-            ->method('getOrder')
+        $this->paymentDataObjectMock->method('getOrder')
             ->willReturn($this->orderMock);
 
-        $this->orderMock->expects($this->once())
-            ->method('getBillingAddress')
+        $this->orderMock->method('getBillingAddress')
             ->willReturn($this->addressMock);
 
-        $this->customerAddressFactoryMock->expects($this->once())
-            ->method('create')
-            ->willReturn($this->customerAddress);
+        $this->addressFactoryMock->method('create')
+            ->willReturn(new Address());
 
         $addressData = [
-            'John' => ['Firstname', 'FirstName'],
-            'Doe' => ['Lastname', 'LastName'],
-            'Acme Co' => ['Company', 'Company'],
-            '123 Abc St' => ['StreetLine1', 'Address'],
-            'Lawton' => ['City', 'City'],
-            'MI' => ['RegionCode', 'State'],
-            '49065' => ['Postcode', 'Zip'],
-            'US' => ['CountryId', 'Country'],
-            '(555) 229-3326' => ['Telephone', 'PhoneNumber'],
-            'roni_cost@example.com' => ['Email', 'Email']
+            'John' => ['Firstname', Address::FIELD_FIRSTNAME],
+            'Doe' => ['Lastname',  Address::FIELD_LASTNAME],
+            'Acme Co' => ['Company', Address::FIELD_COMPANY],
+            '123 Abc St' => ['StreetLine1', Address::FIELD_ADDRESS],
+            'Lawton' => ['City', Address::FIELD_CITY],
+            'MI' => ['RegionCode', Address::FIELD_STATE],
+            '49065' => ['Postcode', Address::FIELD_ZIP],
+            'US' => ['CountryId', Address::FIELD_COUNTRY],
+            '(555) 229-3326' => ['Telephone', Address::FIELD_PHONE_NUMBER],
         ];
 
         foreach ($addressData as $value => $fieldNames) {
-            $this->addressMock->expects($this->once())
-                ->method('get' . $fieldNames[0])
+            $this->addressMock->method('get' . $fieldNames[0])
                 ->willReturn($value);
         }
 
         $result = $this->addressDataBuilder->build(['payment' => $this->paymentDataObjectMock]);
-        $customerAddress = $result['bill_to_address'];
+        $customerAddress = $result[AddressDataBuilder::BILL_TO]->toArray();
 
         foreach ($addressData as $value => $fieldNames) {
             $this->assertEquals(
                 $value,
-                $customerAddress->{'get' . $fieldNames[1]}()
+                $customerAddress[$fieldNames[1]]
             );
         }
     }
