@@ -16,12 +16,11 @@
 
 namespace Pmclain\AuthorizenetCim\Test\Unit\Gateway\Request;
 
+use Pmclain\Authnet\TransactionRequest;
+use Pmclain\Authnet\TransactionRequestFactory;
 use Pmclain\AuthorizenetCim\Gateway\Request\CaptureDataBuilder;
 use \PHPUnit_Framework_MockObject_MockObject as MockObject;
-use Magento\Framework\TestFramework\Unit\Helper\ObjectManager;
 use Pmclain\AuthorizenetCim\Gateway\Helper\SubjectReader;
-use Pmclain\AuthorizenetCim\Model\Authorizenet\Contract\TransactionRequestTypeFactory;
-use net\authorize\api\contract\v1\TransactionRequestType;
 use Magento\Payment\Gateway\Data\PaymentDataObjectInterface;
 use Magento\Payment\Model\InfoInterface;
 
@@ -33,10 +32,10 @@ class CaptureDataBuilderTest extends \PHPUnit\Framework\TestCase
     /** @var SubjectReader */
     private $subjectReader;
 
-    /** @var TransactionRequestTypeFactory|MockObject */
+    /** @var TransactionRequestFactory|MockObject */
     private $transactionRequestFactoryMock;
 
-    /** @var TransactionRequestType */
+    /** @var TransactionRequest */
     private $transactionRequest;
 
     /** @var PaymentDataObjectInterface|MockObject */
@@ -47,49 +46,33 @@ class CaptureDataBuilderTest extends \PHPUnit\Framework\TestCase
 
     protected function setUp()
     {
-        $objectManager = new ObjectManager($this);
+        $this->subjectReader = new SubjectReader();
 
-        $this->subjectReader = $objectManager->getObject(SubjectReader::class);
-
-        $this->transactionRequestFactoryMock = $this->getMockBuilder(TransactionRequestTypeFactory::class)
-            ->disableOriginalConstructor()
-            ->setMethods(['create'])
-            ->getMock();
-
-        $this->transactionRequest = $objectManager->getObject(TransactionRequestType::class);
-
-        $this->paymentDataObjectMock = $this->getMockBuilder(PaymentDataObjectInterface::class)
-            ->setMethods(['getPayment'])
-            ->getMockForAbstractClass();
-
+        $this->transactionRequestFactoryMock = $this->createMock(TransactionRequestFactory::class);
+        $this->paymentDataObjectMock = $this->createMock(PaymentDataObjectInterface::class);
         $this->paymentMock = $this->getMockBuilder(InfoInterface::class)
-            ->disableOriginalConstructor()
             ->setMethods(['getCcTransId'])
             ->getMockForAbstractClass();
 
-        $this->paymentDataObjectMock->expects($this->once())
-            ->method('getPayment')
+        $this->transactionRequestFactoryMock->method('create')
+            ->willReturn(new TransactionRequest());
+
+        $this->paymentDataObjectMock->method('getPayment')
             ->willReturn($this->paymentMock);
 
-        $this->captureDataBuilder = $objectManager->getObject(
-            CaptureDataBuilder::class,
-            [
-                '_subjectReader' => $this->subjectReader,
-                '_transactionRequestFactory' => $this->transactionRequestFactoryMock
-            ]
+        $this->captureDataBuilder = new CaptureDataBuilder(
+            $this->subjectReader,
+            $this->transactionRequestFactoryMock
         );
     }
 
     /** @cover CaptureDataBuilder::build */
     public function testBuild()
     {
-        $this->paymentMock->expects($this->once())
-            ->method('getCcTransId')
-            ->willReturn('123456789');
+        $transId = '123456789';
 
-        $this->transactionRequestFactoryMock->expects($this->once())
-            ->method('create')
-            ->willReturn($this->transactionRequest);
+        $this->paymentMock->method('getCcTransId')
+            ->willReturn($transId);
 
         $subject = [
             'payment' => $this->paymentDataObjectMock,
@@ -97,10 +80,11 @@ class CaptureDataBuilderTest extends \PHPUnit\Framework\TestCase
         ];
 
         $result = $this->captureDataBuilder->build($subject);
+        $resultRequest = $result[CaptureDataBuilder::TRANSACTION_REQUEST]->toArray();
 
-        $this->assertInstanceOf(
-            TransactionRequestType::class,
-            $result['transaction_request']
+        $this->assertEquals(
+            $transId,
+            $resultRequest[TransactionRequest::FIELD_REF_TRANS_ID]
         );
     }
 
@@ -110,8 +94,7 @@ class CaptureDataBuilderTest extends \PHPUnit\Framework\TestCase
      */
     public function testBuildWithoutTransactionId()
     {
-        $this->paymentMock->expects($this->once())
-            ->method('getCcTransId')
+        $this->paymentMock->method('getCcTransId')
             ->willReturn('');
 
         $subject = [
