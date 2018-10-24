@@ -28,7 +28,7 @@ class Authorize extends GeneralResponseValidator
                 function ($response) {
                     $transactionResponse = $response->getData('transactionResponse');
                     return [
-                        count($transactionResponse->getErrors()) === 0,
+                        (!$transactionResponse->getErrors() || count($transactionResponse->getErrors()) === 0),
                         [__($transactionResponse->getMessages()[0]->getDescription())]
                     ];
                 }
