@@ -80,10 +80,14 @@ class CustomerDataBuilder implements BuilderInterface
 
         $customerId = null;
         $profileId = null;
+        $guest = false;
 
         if ($this->session->isLoggedIn()) {
             $customerId = $this->session->getCustomerId();
             $profileId = $this->getCimProfileId();
+        } else {
+            $email = null;
+            $guest = true;
         }
 
         /**
@@ -92,6 +96,7 @@ class CustomerDataBuilder implements BuilderInterface
         $customerProfile = $this->customerProfileFactory->create();
         $customerProfile->setCustomerId($customerId);
         $customerProfile->setEmail($email ?: $order->getOrderIncrementId() . '_' . mt_rand() . '-' . time());
+        $customerProfile->setProfileType($guest ? 'guest' : 'regular');
 
         return [
             self::CUSTOMER_ID => $customerId,
