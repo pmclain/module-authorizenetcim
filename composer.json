@@ -6,7 +6,7 @@
     "OSL-3.0"
   ],
   "require": {
-    "magento/framework": "~101.0.0",
+    "magento/framework": ">=101.0.0",
     "pmclain/authorizenet-php-sdk": "~0.1.7"
   },
   "autoload": {
